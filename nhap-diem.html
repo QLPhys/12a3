@@ -182,7 +182,15 @@ body.sheet-open .wrap { padding-bottom: 60vh; }
 .act.p .v { color: var(--plus); } .act.m .v { color: var(--minus); } .act.M .v { color: var(--major); }
 .act.armed { box-shadow: 0 0 0 3px var(--major); background: var(--major-soft); }
 .act.armed .t::after { content: "Chạm lần nữa để ghi"; display: block; color: var(--major); font-size: 11px; font-weight: 800; margin-top: 2px; }
-.sheet.min .acts, .sheet.min .notebar, .sheet.min .draft { display: none; }
+.sheet.min .acts, .sheet.min .notebar, .sheet.min .draft, .sheet.min .pick { display: none; }
+.pick { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; flex-shrink: 0; margin: 0 -14px; padding: 2px 14px 4px; }
+.pick::-webkit-scrollbar { display: none; }
+.pk { flex-shrink: 0; border: 1px solid var(--line); background: var(--bg); border-radius: 999px; padding: 4px 11px 4px 4px; display: flex; align-items: center; gap: 6px; font-weight: 800; font-size: 13.5px; min-height: 40px; }
+.pk i { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-style: normal; font-size: 13px; font-weight: 900; }
+.pk small { font-size: 11px; color: var(--muted); font-weight: 800; }
+.pk[aria-pressed="true"] { background: var(--brand); border-color: var(--brand); color: #fff; box-shadow: 0 4px 12px color-mix(in srgb, var(--brand) 35%, transparent); }
+.pk[aria-pressed="true"] small { color: rgba(255,255,255,.85); }
+.sheet.nosel .acts, .sheet.nosel .notebar { opacity: .45; }
 .notebar { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; flex-shrink: 0; }
 .xtra { display: flex; align-items: center; gap: 4px; background: var(--bg); border-radius: 14px; padding: 4px; border: 1px solid var(--line); }
 .xtra label { font-size: 10.5px; font-weight: 800; line-height: 1.1; color: var(--muted); padding: 0 2px 0 4px; text-align: center; }
@@ -307,7 +315,7 @@ html, body { transition: background-color .3s ease, color .3s ease; }
     </div>
   </div>
   <div class="log" id="log"></div>
-  <p class="foot">Điểm tuần = 70 + cộng (tối đa 30) − trừ. Vuốt sang trái/phải để đổi tuần. Chọn nội dung rồi bấm Lưu; nếu chưa kịp bấm, hệ thống tự lưu sau vài giây.</p>
+  <p class="foot">Điểm tuần = 70 + cộng (tối đa 30) − trừ. Vuốt sang trái/phải để đổi tuần. Chọn nội dung rồi bấm Lưu; nếu chưa kịp bấm, hệ thống tự lưu sau vài giây. Bảng chọn vẫn mở để ghi tiếp; bấm Đóng khi xong.</p>
   </main>
 </div>
 <section class="sheet" id="sheet" aria-label="Chọn việc cần ghi">
@@ -315,9 +323,9 @@ html, body { transition: background-color .3s ease, color .3s ease; }
   <div class="who">
     <div class="faces" id="faces"></div>
     <div class="who-t"><b id="who"></b><small id="whoSub"></small></div>
-    <button type="button" id="toggleMin">Thêm bạn</button>
     <button type="button" id="close">Đóng</button>
   </div>
+  <div class="pick" id="pick" role="group" aria-label="Chọn bạn"></div>
   <div class="notebar">
     <input id="note" type="text" placeholder="Ghi chú / lý do" autocomplete="off" maxlength="180" enterkeyhint="done">
     <div class="xtra" id="xtra" title="Điểm giáo viên cho thêm (+) hoặc vi phạm khác (−). Bắt buộc ghi lý do.">
@@ -419,7 +427,7 @@ function __main() {
   function store(k, v) { try { if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} }
   function load(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
   var WHO = DATA.who || ('Tổ trưởng ' + DATA.to.toLowerCase() + ' (app)');
-  var state = { week: CUR, date: TODAY, sel: [], min: false, sup: 0, xtra: 0, draft: null, need: false,
+  var state = { week: CUR, date: TODAY, sel: [], open: false, min: false, sup: 0, xtra: 0, draft: null, need: false,
     entries: DATA.entries.slice(), undoOp: null, delArm: null, pops: {}, adjust: false, logAll: false,
     grp: (LOP && load('sotd-grp-' + KEY)) || 'all' };
   if (state.grp !== 'all' && !(GROUPS && STUDENTS.some(function (n) { return GROUPS[n] === state.grp; }))) state.grp = 'all';
@@ -520,7 +528,7 @@ function __main() {
   function stopAuto() { clearTimeout(autoT); autoT = null; var b = $('dBar'); b.classList.remove('run'); }
   function startAuto() {
     stopAuto();
-    if (!state.draft || state.min || document.activeElement === $('note')) return;
+    if (!state.draft || !state.sel.length || state.min || document.activeElement === $('note')) return;
     if (noteNeeded() && !$('note').value.trim()) return;
     var b = $('dBar');
     b.style.setProperty('--t', AUTO + 's'); void b.offsetWidth; b.classList.add('run');
@@ -550,7 +558,7 @@ function __main() {
     state.entries = state.entries.concat(tmp);
     queue.push({ p: p, e: tmp }); saveQ();
     state.undoOp = p.op;
-    state.sel = []; state.sup = 0; state.xtra = 0; state.min = false; state.draft = null; state.need = false; $('note').value = '';
+    state.sup = 0; state.xtra = 0; state.min = false; state.draft = null; state.need = false; $('note').value = '';
     state.pops = {};
     names.forEach(function (n) { state.pops[n] = sign(v); });
     setTimeout(function () { state.pops = {}; }, 1400);
@@ -567,7 +575,7 @@ function __main() {
     var dir = w > state.week ? 'l' : 'r';
     state.week = w;
     state.adjust = false;
-    state.sel = []; state.draft = null; state.delArm = null; stopAuto();
+    state.sel = []; state.open = false; state.draft = null; state.delArm = null; stopAuto();
     var mon = monOf(w);
     state.date = w === CUR ? TODAY : mon;
     state.logAll = w !== CUR;
@@ -660,7 +668,7 @@ function __main() {
     $('lockBtn').onclick = function () {
       if (state.adjust) flushDraft();
       state.adjust = !state.adjust;
-      if (!state.adjust) { state.sel = []; state.draft = null; stopAuto(); }
+      if (!state.adjust) { state.sel = []; state.open = false; state.draft = null; stopAuto(); }
       else toast('Chọn ngày, chạm tên bạn, ghi lý do rồi chọn nội dung và bấm Lưu.', false);
       render();
     };
@@ -707,14 +715,34 @@ function __main() {
         (state.pops[n] ? '<span class="pop ' + (state.pops[n].charAt(0) === '+' ? 'p' : 'm') + '">' + state.pops[n] + '</span>' : '');
       b.onclick = function () {
         if (locked()) { toast('Tuần ' + state.week + ' đã chốt. Bấm "Điều chỉnh" nếu có thay đổi hoặc phát sinh.', false); return; }
-        var i = state.sel.indexOf(n);
-        if (i >= 0) state.sel.splice(i, 1); else { if (!state.sel.length) state.min = false; state.sel.push(n); }
-        if (!state.sel.length) { state.draft = null; state.xtra = 0; stopAuto(); }
-        render();
-        if (state.draft) startAuto();
+        toggleSel(n, true);
       };
       $('grid').appendChild(b);
     });
+  }
+  function toggleSel(n, fromGrid) {
+    var i = state.sel.indexOf(n);
+    if (i >= 0) state.sel.splice(i, 1); else state.sel.push(n);
+    if (fromGrid && state.sel.length) { state.open = true; state.min = false; }
+    if (!state.sel.length) stopAuto();
+    if (fromGrid) render(); else { renderSheet(); renderGrid(); }
+    if (state.draft) startAuto();
+  }
+  function renderPick() {
+    var box = $('pick'), first = !box.childElementCount, sl = box.scrollLeft;
+    box.innerHTML = '';
+    vis().forEach(function (n) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'pk';
+      var on = state.sel.indexOf(n) >= 0;
+      b.setAttribute('aria-pressed', String(on));
+      b.innerHTML = '<i style="background:' + avColor(n) + '">' + esc(given(n).charAt(0)) + '</i>' + esc(given(n)) + ' <small class="num">' + weekScore(n, state.week) + '</small>';
+      b.title = n;
+      b.onclick = function () { toggleSel(n, false); };
+      box.appendChild(b);
+      if (on && first) setTimeout(function () { box.scrollLeft = Math.max(0, b.offsetLeft - 40); }, 0);
+    });
+    if (!first) box.scrollLeft = sl;
   }
   function renderDraft() {
     var box = $('draft'), a = draftAct();
@@ -734,20 +762,19 @@ function __main() {
     $('supOut').textContent = state.sup;
   }
   function renderSheet() {
-    var open = state.sel.length > 0;
+    var open = state.open;
     var sh = $('sheet');
+    if (!open) $('pick').innerHTML = ''; else renderPick();
     sh.classList.toggle('open', open);
+    sh.classList.toggle('nosel', open && !state.sel.length);
     sh.classList.toggle('min', state.min);
     document.body.classList.toggle('sheet-open', open);
     $('toast').classList.toggle('up', open);
     $('faces').innerHTML = state.sel.slice(0, 4).map(function (n) { return '<span style="background:' + avColor(n) + '">' + esc(given(n).charAt(0)) + '</span>'; }).join('');
-    $('who').textContent = open ? (state.sel.length === 1 ? state.sel[0] : state.sel.length + ' bạn: ' + state.sel.map(given).join(', ')) : '';
+    $('who').textContent = !open ? '' : !state.sel.length ? 'Chạm tên bạn ở hàng dưới' : state.sel.length === 1 ? state.sel[0] : state.sel.length + ' bạn: ' + state.sel.map(given).join(', ');
     var sub = $('whoSub');
     sub.textContent = 'Ghi cho ' + (state.date === TODAY ? 'hôm nay ' : wd(state.date) + ' ') + fmt(state.date) + ' · tuần ' + state.week + (state.adjust ? ' · điều chỉnh' : '');
     sub.className = state.adjust ? 'adj' : '';
-    var tm = $('toggleMin');
-    tm.textContent = state.min ? 'Chọn việc' : 'Thêm bạn';
-    tm.className = state.min ? 'pri' : '';
     var note = $('note');
     note.placeholder = state.adjust ? 'Lý do điều chỉnh (bắt buộc)' : noteNeeded() ? 'Lý do (bắt buộc)' : 'Ghi chú / lý do';
     note.classList.toggle('req', noteNeeded() && !note.value.trim());
@@ -838,12 +865,14 @@ function __main() {
   }
   function pick(a) {
     if (locked()) return;
+    if (!state.sel.length) { toast('Hãy chạm chọn tên bạn trước (hàng tên trong bảng).', false); return; }
     state.xtra = 0;
     if (state.draft && state.draft.code === a.c) { commit(false); return; }
     setDraft({ code: a.c });
   }
   function setXtra(x) {
     if (locked()) return;
+    if (!state.sel.length) { toast('Hãy chạm chọn tên bạn trước (hàng tên trong bảng).', false); return; }
     state.xtra = Math.max(-20, Math.min(20, x));
     if (state.xtra) setDraft({ code: 'KHAC', pts: state.xtra });
     else if (state.draft && state.draft.code === 'KHAC') setDraft(null);
@@ -872,7 +901,7 @@ function __main() {
   function toast(msg, canUndo) {
     $('toastMsg').textContent = msg;
     $('undo').hidden = !canUndo;
-    $('toast').classList.toggle('up', state.sel.length > 0);
+    $('toast').classList.toggle('up', state.open);
     $('toast').classList.add('show');
     clearTimeout(tTimer);
     tTimer = setTimeout(function () { $('toast').classList.remove('show'); }, canUndo ? 8000 : 4000);
@@ -916,20 +945,22 @@ function __main() {
   $('reload').onclick = function () { flushDraft(); toast('Đang tải lại…', false); refresh(false); };
   document.addEventListener('visibilitychange', function () {
     if (document.visibilityState === 'hidden') { flushDraft(); beacon(); }
-    else { pump(); if (Date.now() - lastSync > 60000 && !state.sel.length) refresh(true); }
+    else { pump(); if (Date.now() - lastSync > 60000 && !state.open) refresh(true); }
   });
   window.addEventListener('pagehide', function () { flushDraft(); beacon(); });
   $('all').onclick = function () {
     if (locked()) { toast('Tuần ' + state.week + ' đã chốt. Bấm "Điều chỉnh" nếu có thay đổi hoặc phát sinh.', false); return; }
     var vs = vis();
     vs.forEach(function (n) { if (state.sel.indexOf(n) < 0) state.sel.push(n); });
-    state.min = false; render(); if (state.draft) startAuto();
+    state.open = true; state.min = false; render(); if (state.draft) startAuto();
   };
-  $('none').onclick = function () { state.sel = []; state.draft = null; state.xtra = 0; stopAuto(); render(); };
-  $('close').onclick = function () { flushDraft(); state.sel = []; state.draft = null; state.xtra = 0; state.min = false; stopAuto(); render(); };
+  $('none').onclick = function () { flushDraft(); state.sel = []; state.open = false; state.draft = null; state.xtra = 0; stopAuto(); render(); };
+  $('close').onclick = function () { flushDraft(); state.sel = []; state.open = false; state.draft = null; state.xtra = 0; state.min = false; stopAuto(); render(); };
   $('dCancel').onclick = function () { state.xtra = 0; setDraft(null); };
   $('dSave').onclick = function () { commit(false); };
-  $('toggleMin').onclick = function () { state.min = !state.min; renderSheet(); if (state.min) stopAuto(); else startAuto(); };
+  $('sheet').addEventListener('touchstart', function () { if (autoT) startAuto(); }, { passive: true });
+  var scT = 0;
+  $('acts').addEventListener('scroll', function () { if (autoT && Date.now() - scT > 400) { scT = Date.now(); startAuto(); } }, { passive: true });
   $('logDay').onclick = function () { if (!state.logAll) return; state.logAll = false; renderLog(); stagger('log'); };
   $('logWeek').onclick = function () { if (state.logAll) return; state.logAll = true; renderLog(); stagger('log'); };
   $('note').oninput = function () { state.need = false; $('note').classList.toggle('req', noteNeeded() && !$('note').value.trim()); renderDraft(); };
@@ -964,7 +995,7 @@ function __main() {
   var sx = null, sy = 0, st0 = 0;
   document.addEventListener('touchstart', function (e) {
     var t = e.target;
-    if (state.sel.length || e.touches.length > 1 || (t.closest && t.closest('.strip, .grp-f, .sheet, .toast, input'))) { sx = null; return; }
+    if (state.open || e.touches.length > 1 || (t.closest && t.closest('.strip, .grp-f, .sheet, .toast, input'))) { sx = null; return; }
     sx = e.touches[0].clientX; sy = e.touches[0].clientY; st0 = Date.now();
   }, { passive: true });
   document.addEventListener('touchend', function (e) {
@@ -989,7 +1020,7 @@ function __main() {
     sh.style.transform = '';
     if (gd > 70) {
       if (!state.min) { state.min = true; stopAuto(); renderSheet(); }
-      else { flushDraft(); state.sel = []; state.draft = null; state.min = false; render(); }
+      else { flushDraft(); state.sel = []; state.open = false; state.draft = null; state.min = false; render(); }
     }
   }
   gz.addEventListener('touchend', endDrag);
