@@ -3,7 +3,6 @@
 <head>
 <base target="_top">
 <meta charset="utf-8">
-<title>Tra cứu rèn luyện 12A3</title>
 <meta name="theme-color" content="#2350e6">
 <script>try { var t0 = localStorage.getItem("sotd-theme"); if (t0 === "light" || t0 === "dark") document.documentElement.setAttribute("data-theme", t0); } catch (e) {}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -303,7 +302,7 @@ function __main() {
     C04: 'Tích cực hoạt động chung', C05: 'Tự nhận thêm việc', C06: 'Tiến bộ rõ rệt', C07: 'Thành tích nổi bật', C08: 'Sáng kiến hay',
     T01: 'Đi học trễ', T02: 'Không chuẩn bị bài', T03: 'Không trực nhật', T04: 'Mất trật tự (đã nhắc)',
     T05: 'Sai trang phục', T06: 'Bỏ dở việc lớp, tổ', T07: 'Không theo yêu cầu lớp', T08: 'Nghỉ học không phép',
-    T09: 'Dùng điện thoại', T10: 'Thiếu tôn trọng', T11: 'Cố ý gây mất trật tự', T12: 'Không chấp hành GV' };
+    T09: 'Dùng điện thoại', T10: 'Thiếu tôn trọng', T11: 'Cố ý gây mất trật tự', T12: 'Không chấp hành GV', C09: 'Điểm GV cho thêm', T13: 'Vi phạm khác' };
   var ICON = {
     mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',
     check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
@@ -342,7 +341,7 @@ function __main() {
   };
   var CODE_ICON = { C01: 'mic', C02: 'check', C03: 'heart', C04: 'users', C05: 'plus', C06: 'trend', C07: 'trophy', C08: 'bulb',
     T01: 'clock', T02: 'book', T03: 'broom', T04: 'chat', T05: 'shirt', T06: 'task', T07: 'flag', T08: 'door', T09: 'phone',
-    T10: 'alert', T11: 'zap', T12: 'stop' };
+    T10: 'alert', T11: 'zap', T12: 'stop', C09: 'trophy', T13: 'alert' };
   function svg(name, cls) { return '<svg' + (cls ? ' class="' + cls + '"' : '') + ' viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (ICON[name] || ICON.check) + '</svg>'; }
   function lab(c) { return SHORT[c] || (byCode[c] ? byCode[c].t : c); }
   function dn(s) { var a = s.split('-'); return Math.round(Date.UTC(+a[0], +a[1] - 1, +a[2]) / 864e5); }
@@ -369,7 +368,7 @@ function __main() {
   function restart(el, cls) { el.classList.remove('in-r', 'in-l', 'spin', 'anim'); void el.offsetWidth; el.classList.add(cls); }
   function stagger(el) { [].forEach.call(el.children, function (c, i) { c.style.animationDelay = Math.min(i, 16) * 30 + 'ms'; }); restart(el, 'anim'); setTimeout(function () { el.classList.remove('anim'); }, 1200); }
 
-   
+  /* ---------- Theme ---------- */
   var THEMES = ['auto', 'light', 'dark'], TLAB = { auto: 'Tự động theo máy', light: 'Sáng', dark: 'Tối' };
   var theme = store('sotd-theme') || 'auto';
   if (THEMES.indexOf(theme) < 0) theme = 'auto';
@@ -394,7 +393,7 @@ function __main() {
     };
   });
 
-   
+  /* ---------- Screen 1: pick ---------- */
   var pick = { to: '', q: '' };
   function norm(s) { return s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase(); }
   function renderHeroStats() {
@@ -457,7 +456,7 @@ function __main() {
   }
   $('q').oninput = function () { pick.q = this.value; renderPeople(false); };
 
-   
+  /* ---------- Screen 2: student ---------- */
   var cache = {};
   var cur = { name: '', data: null, tab: 0, filter: 'all', selDay: null };
   function showScreen(id, dir) {
@@ -573,7 +572,7 @@ function __main() {
     if (i === 1) { drawLine(); scrollHeat(); }
   }
 
-   
+  /* ---------- Pane 0: overview ---------- */
   function renderOverview() {
     var d = cur.data, h = '';
     h += '<div class="card"><h3>' + svg('grid') + 'Điểm từng tuần</h3><p class="sub">Mỗi ô là điểm một tuần (thang 0–100). Màu theo mức rèn luyện.</p><div class="wk-strip">';
@@ -602,7 +601,7 @@ function __main() {
     $('pane0').innerHTML = h;
   }
 
-   
+  /* ---------- Pane 1: charts ---------- */
   function dayMap() {
     var m = {};
     cur.data.entries.forEach(function (e) { var k = dn(e.d); (m[k] = m[k] || []).push(e); });
@@ -751,7 +750,7 @@ function __main() {
     hit.addEventListener('touchstart', at, { passive: true }); hit.addEventListener('touchmove', at, { passive: true }); hit.addEventListener('touchend', function () { setTimeout(off, 1600); });
   }
 
-   
+  /* ---------- Pane 2: log ---------- */
   function renderLog() {
     var d = cur.data;
     var h = '<div class="filters chips" role="group" aria-label="Lọc nhật ký">' +
@@ -782,7 +781,7 @@ function __main() {
     });
   }
 
-   
+  /* ---------- swipe between tabs ---------- */
   var sx = null, sy = 0, st0 = 0;
   document.addEventListener('touchstart', function (e) {
     var t = e.target;

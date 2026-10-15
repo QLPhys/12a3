@@ -3,7 +3,6 @@
 <head>
 <base target="_top">
 <meta charset="utf-8">
-<title>Đăng nhập tổ trưởng · Sổ thi đua 12A3</title>
 <meta name="theme-color" content="#2350e6">
 <script>try { var t0 = localStorage.getItem("sotd-theme"); if (t0 === "light" || t0 === "dark") document.documentElement.setAttribute("data-theme", t0); } catch (e) {}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -109,8 +108,8 @@ label.f { display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;
       <span class="badge"><i></i>Sổ thi đua 12A3</span>
       <button class="icon-btn" id="theme" type="button" aria-label="Đổi giao diện"></button>
     </div>
-    <h1>Đăng nhập <span>tổ trưởng</span></h1>
-    <p>Dùng email đã được GVCN cấp quyền. Không cần tài khoản Google.</p>
+    <h1>Đăng nhập <span>nhập điểm</span></h1>
+    <p>Dành cho tổ trưởng, lớp trưởng và lớp phó. Dùng email đã được GVCN cấp quyền, không cần tài khoản Google.</p>
   </header>
 
   <main class="card">
@@ -127,7 +126,7 @@ label.f { display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;
       <div class="dots"><i class="on"></i><i></i><i></i></div>
       <h2>Nhập email của bạn</h2>
       <p class="sub">Hệ thống sẽ gửi mã 6 số vào email này.</p>
-      <label class="f" for="email">Email tổ trưởng</label>
+      <label class="f" for="email">Email được GVCN cấp quyền</label>
       <input class="inp" id="email" type="email" inputmode="email" autocomplete="email" placeholder="vd: tento@gmail.com">
       <button class="btn" id="sendBtn" type="button">Gửi mã đăng nhập</button>
       <div class="msg" id="msgEmail" hidden></div>
@@ -266,9 +265,9 @@ label.f { display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px;
         return;
       }
       var em = store('sotd-tok-email') || '';
-      $('svTo').textContent = 'Tổ trưởng ' + r.to.toLowerCase();
+      $('svTo').textContent = /^Tổ /.test(r.to) ? 'Tổ trưởng ' + r.to.toLowerCase() : r.to + ' · quản lý cả lớp';
       $('svEmail').textContent = em;
-      $('svAv').textContent = r.to.replace(/[^0-9]/g, '') || 'T';
+      $('svAv').textContent = /^Tổ /.test(r.to) ? r.to.replace(/[^0-9]/g, '') : (r.to.replace(/[^0-9]/g, '') ? 'P' + r.to.replace(/[^0-9]/g, '') : 'LT');
       $('svGo').href = 'nhap-diem.html?k=' + tok;
       $('email').value = em;
       show('stSaved');

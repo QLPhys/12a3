@@ -3,7 +3,6 @@
 <head>
 <base target="_top">
 <meta charset="utf-8">
-<title>Sổ thi đua 12A3 · Nhập điểm</title>
 <meta name="theme-color" content="#2350e6">
 <script>try { var t0 = localStorage.getItem("sotd-theme"); if (t0 === "light" || t0 === "dark") document.documentElement.setAttribute("data-theme", t0); } catch (e) {}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -48,7 +47,7 @@ button:disabled { cursor: default; }
 button:focus-visible, input:focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; }
 .num { font-variant-numeric: tabular-nums; }
 .wrap { max-width: 560px; margin: 0 auto; padding-inline: 16px; padding-block: 0 40px; }
-body.sheet-open .wrap { padding-bottom: 140px; }
+body.sheet-open .wrap { padding-bottom: 60vh; }
 .hero { margin-inline: -16px; padding: 16px 16px 58px; color: #fff; position: relative; overflow: hidden;
   background: radial-gradient(120% 90% at 100% 0%, #4d7bff 0%, transparent 55%), linear-gradient(160deg, var(--brand) 0%, var(--brand-2) 100%); }
 .hero.past { background: radial-gradient(120% 90% at 100% 0%, #7a86a8 0%, transparent 55%), linear-gradient(160deg, #46557d 0%, #1c2540 100%); }
@@ -183,14 +182,48 @@ body.sheet-open .wrap { padding-bottom: 140px; }
 .act.p .v { color: var(--plus); } .act.m .v { color: var(--minus); } .act.M .v { color: var(--major); }
 .act.armed { box-shadow: 0 0 0 3px var(--major); background: var(--major-soft); }
 .act.armed .t::after { content: "Chạm lần nữa để ghi"; display: block; color: var(--major); font-size: 11px; font-weight: 800; margin-top: 2px; }
-.sheet.busy .acts { opacity: .5; pointer-events: none; }
-.sheet.min .acts, .sheet.min .more { display: none; }
-.more { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px; border-top: 1px solid var(--line); padding-top: 8px; flex-shrink: 0; }
+.sheet.min .acts, .sheet.min .notebar, .sheet.min .draft { display: none; }
+.notebar { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; flex-shrink: 0; }
+.xtra { display: flex; align-items: center; gap: 4px; background: var(--bg); border-radius: 14px; padding: 4px; border: 1px solid var(--line); }
+.xtra label { font-size: 10.5px; font-weight: 800; line-height: 1.1; color: var(--muted); padding: 0 2px 0 4px; text-align: center; }
+.xtra button { width: 38px; height: 38px; border-radius: 10px; border: 0; background: var(--card); font-weight: 900; font-size: 20px; box-shadow: var(--shadow-s); }
+.xtra output { min-width: 30px; text-align: center; font-weight: 900; font-size: 17px; color: var(--muted); }
+.xtra.p { border-color: var(--plus); background: var(--plus-soft); } .xtra.p output { color: var(--plus); }
+.xtra.m { border-color: var(--minus); background: var(--minus-soft); } .xtra.m output { color: var(--minus); }
+.draft { position: relative; flex-shrink: 0; display: grid; gap: 8px; border-radius: 18px; padding: 12px 12px 10px; background: var(--bg); border: 2px solid var(--brand); overflow: hidden; animation: rise .25s cubic-bezier(.2,.8,.2,1); }
+.draft[hidden] { display: none; }
+.draft.need { border-color: var(--major); }
+.d-top { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 10px; align-items: center; }
+.d-top .ico { width: 34px; height: 34px; border-radius: 10px; }
+.d-top .ico svg { width: 19px; height: 19px; }
+.d-t { min-width: 0; }
+.d-t b { display: block; font-size: 14px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.d-t small { display: block; font-size: 12px; color: var(--muted); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.draft.need .d-t small { color: var(--major); font-weight: 800; }
+.d-x { border: 0; background: var(--card); width: 34px; height: 34px; border-radius: 10px; font-size: 18px; font-weight: 800; color: var(--muted); }
+.d-row { display: flex; gap: 8px; align-items: center; }
+.d-save { flex: 1; min-height: 50px; border: 0; border-radius: 14px; background: var(--brand); color: #fff; font-size: 17px; font-weight: 900; display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 6px 18px color-mix(in srgb, var(--brand) 40%, transparent); }
+.d-save svg { width: 20px; height: 20px; }
+.d-save:active { transform: scale(.98); }
+.d-bar { position: absolute; left: 0; top: 0; height: 4px; width: 100%; background: var(--brand); transform-origin: left; transform: scaleX(0); }
+.d-bar.run { animation: drain var(--t, 6s) linear forwards; }
+@keyframes drain { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+.act.chosen { box-shadow: 0 0 0 3px var(--brand); background: color-mix(in srgb, var(--brand) 10%, var(--bg)); }
+.sync { font-size: 11px; font-weight: 800; padding: 3px 8px; border-radius: 999px; background: rgba(255,255,255,.18); display: none; white-space: nowrap; }
+.sync.on { display: inline-block; } .sync.err { background: var(--sun); color: #2a1d00; }
+.wait { display: block; margin-top: 2px; font-size: 11px; font-weight: 800; color: var(--muted); text-align: right; }
+.wait.err { color: var(--dat); }
+.row.tmp { opacity: .85; }
+.grp-f { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 16px 0 -6px; }
+.grp-f::-webkit-scrollbar { display: none; }
+.grp-f button { flex-shrink: 0; border: 1px solid var(--line); background: var(--card); border-radius: 999px; padding: 7px 14px; font-size: 13px; font-weight: 800; color: var(--muted); }
+.grp-f button[aria-pressed="true"] { background: var(--brand); border-color: var(--brand); color: #fff; }
 .step-n label { font-size: 11px; font-weight: 800; line-height: 1.15; color: var(--muted); text-align: right; margin-right: 2px; }
 .step-n { display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
-.step-n button { width: 32px; height: 32px; border-radius: 10px; border: 0; background: var(--bg); font-weight: 900; font-size: 18px; }
+.step-n button { width: 36px; height: 36px; border-radius: 10px; border: 0; background: var(--card); font-weight: 900; font-size: 18px; }
 .step-n output { min-width: 20px; text-align: center; font-weight: 900; font-size: 18px; color: var(--major); }
-#note { width: 100%; border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 12px; padding: 10px 12px; font: inherit; font-size: 14px; }
+#note { width: 100%; min-height: 48px; border: 2px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 14px; padding: 10px 12px; font: inherit; font-size: 16px; }
+#note:focus { border-color: var(--brand); outline: none; }
 #note.req { border-color: var(--major); }
 .toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); z-index: 30; transform: translate(-50%, 160%);
   width: min(92vw, 500px); background: var(--ink); color: var(--bg); border-radius: 16px; padding: 12px 14px; box-shadow: var(--shadow);
@@ -236,7 +269,7 @@ html, body { transition: background-color .3s ease, color .3s ease; }
 <div class="wrap">
   <header class="hero" id="hero">
     <div class="hero-top">
-      <span class="badge"><i></i><span id="toName">12A3</span></span>
+      <span style="display:flex;gap:6px;align-items:center;min-width:0"><span class="badge"><i></i><span id="toName">12A3</span></span><span class="sync" id="sync"></span></span>
       <div class="hero-actions"><button class="icon-btn sq" id="theme" type="button" aria-label="Đổi giao diện"></button><button class="icon-btn" id="reload" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>Tải lại</button></div>
     </div>
     <div class="title-row"><h1 id="title">Tuần <span>1</span></h1><span class="tag" id="stateTag"></span></div>
@@ -257,10 +290,11 @@ html, body { transition: background-color .3s ease, color .3s ease; }
   </section>
   <div class="lock" id="lock" hidden></div>
   <div class="top" id="top"></div>
+  <div class="grp-f" id="grpF" role="group" aria-label="Chọn tổ" hidden></div>
   <div class="head">
     <h2>Chạm chọn bạn</h2>
     <div style="display:flex;gap:6px">
-      <button class="chip-btn" id="all" type="button">Cả tổ</button>
+      <button class="chip-btn" id="all" type="button">Chọn hết</button>
       <button class="chip-btn" id="none" type="button">Bỏ chọn</button>
     </div>
   </div>
@@ -273,7 +307,7 @@ html, body { transition: background-color .3s ease, color .3s ease; }
     </div>
   </div>
   <div class="log" id="log"></div>
-  <p class="foot">Điểm tuần = 70 + cộng (tối đa 30) − trừ. Vuốt sang trái/phải để đổi tuần. Mỗi lần ghi lưu ngay vào sổ của GVCN.</p>
+  <p class="foot">Điểm tuần = 70 + cộng (tối đa 30) − trừ. Vuốt sang trái/phải để đổi tuần. Chọn nội dung rồi bấm Lưu; nếu chưa kịp bấm, hệ thống tự lưu sau vài giây.</p>
   </main>
 </div>
 <section class="sheet" id="sheet" aria-label="Chọn việc cần ghi">
@@ -282,16 +316,29 @@ html, body { transition: background-color .3s ease, color .3s ease; }
     <div class="faces" id="faces"></div>
     <div class="who-t"><b id="who"></b><small id="whoSub"></small></div>
     <button type="button" id="toggleMin">Thêm bạn</button>
-    <button type="button" id="close">Hủy</button>
+    <button type="button" id="close">Đóng</button>
+  </div>
+  <div class="notebar">
+    <input id="note" type="text" placeholder="Ghi chú / lý do" autocomplete="off" maxlength="180" enterkeyhint="done">
+    <div class="xtra" id="xtra" title="Điểm giáo viên cho thêm (+) hoặc vi phạm khác (−). Bắt buộc ghi lý do.">
+      <label>Điểm<br>khác</label>
+      <button type="button" id="xMinus" aria-label="Trừ điểm khác">−</button>
+      <output id="xOut" class="num">0</output>
+      <button type="button" id="xPlus" aria-label="Cộng điểm khác">+</button>
+    </div>
   </div>
   <div class="acts" id="acts"></div>
-  <div class="more">
-    <input id="note" type="text" placeholder="Ghi chú (không bắt buộc)" autocomplete="off" maxlength="200">
-    <div class="step-n" title="Chỉ khi lỗi có tình tiết tăng nặng; GVCN duyệt mới tính">
-      <label for="supOut">Trừ<br>thêm</label>
-      <button type="button" id="supMinus" aria-label="Giảm điểm trừ thêm">−</button>
-      <output id="supOut" class="num">0</output>
-      <button type="button" id="supPlus" aria-label="Tăng điểm trừ thêm">+</button>
+  <div class="draft" id="draft" hidden>
+    <i class="d-bar" id="dBar"></i>
+    <div class="d-top"><span class="ico" id="dIco"></span><div class="d-t"><b id="dTitle"></b><small id="dSub"></small></div><button type="button" class="d-x" id="dCancel" aria-label="Bỏ lựa chọn này">✕</button></div>
+    <div class="d-row">
+      <div class="step-n" id="supBox" title="Chỉ khi lỗi có tình tiết tăng nặng; GVCN duyệt mới tính">
+        <label for="supOut">Đề xuất<br>trừ thêm</label>
+        <button type="button" id="supMinus" aria-label="Giảm điểm trừ thêm">−</button>
+        <output id="supOut" class="num">0</output>
+        <button type="button" id="supPlus" aria-label="Tăng điểm trừ thêm">+</button>
+      </div>
+      <button type="button" class="d-save" id="dSave"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Lưu</button>
     </div>
   </div>
 </section>
@@ -303,15 +350,17 @@ function __main() {
   var RAW = window.__RAW;
   var KEY = window.__KEY;
   var DATA = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(RAW), function (ch) { return ch.charCodeAt(0); })));
-  var CFG = DATA.cfg, STUDENTS = DATA.students, ACTS = DATA.crit;
+  var CFG = DATA.cfg, STUDENTS = DATA.students, ACTS = DATA.crit.filter(function (a) { return !a.k; });
+  var GROUPS = DATA.groups || null, LOP = !!DATA.lop;
   var OFF = CFG.off || [], NWEEKS = CFG.weeks || 37;
   var byCode = {};
-  ACTS.forEach(function (a) { byCode[a.c] = a; });
+  DATA.crit.forEach(function (a) { byCode[a.c] = a; });
   var SHORT = { C01: 'Phát biểu, chuẩn bị bài', C02: 'Làm tốt nhiệm vụ', C03: 'Giúp bạn học tập',
     C04: 'Tích cực hoạt động chung', C05: 'Tự nhận thêm việc', C06: 'Tiến bộ rõ rệt', C07: 'Thành tích nổi bật', C08: 'Sáng kiến hay',
+    C09: 'Điểm GV cho thêm',
     T01: 'Đi học trễ', T02: 'Không chuẩn bị bài', T03: 'Không trực nhật', T04: 'Mất trật tự (đã nhắc)',
     T05: 'Sai trang phục', T06: 'Bỏ dở việc lớp, tổ', T07: 'Không theo yêu cầu lớp', T08: 'Nghỉ học không phép',
-    T09: 'Dùng điện thoại', T10: 'Thiếu tôn trọng', T11: 'Cố ý gây mất trật tự', T12: 'Không chấp hành GV' };
+    T09: 'Dùng điện thoại', T10: 'Thiếu tôn trọng', T11: 'Cố ý gây mất trật tự', T12: 'Không chấp hành GV', T13: 'Vi phạm khác' };
   var ICON = {
     mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',
     check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
@@ -321,6 +370,7 @@ function __main() {
     trend: '<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>',
     trophy: '<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H4.5v1A3.5 3.5 0 0 0 8 10.5M16 6h3.5v1A3.5 3.5 0 0 1 16 10.5M12 13v4M8 21h8M9.5 17h5"/>',
     bulb: '<path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.5 10.9V16h7v-2.1A6 6 0 0 0 12 3z"/>',
+    star: '<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>',
     clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
     book: '<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5V5.5"/>',
     broom: '<path d="M14 3l-4 9M7 12h8l2 9H5z"/><path d="M9 16v5M13 16v5"/>',
@@ -340,9 +390,10 @@ function __main() {
     unlock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 7.5-2"/>',
     edit: '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>'
   };
-  var CODE_ICON = { C01: 'mic', C02: 'check', C03: 'heart', C04: 'users', C05: 'plus', C06: 'trend', C07: 'trophy', C08: 'bulb',
+  var CODE_ICON = { C01: 'mic', C02: 'check', C03: 'heart', C04: 'users', C05: 'plus', C06: 'trend', C07: 'trophy', C08: 'bulb', C09: 'star',
     T01: 'clock', T02: 'book', T03: 'broom', T04: 'chat', T05: 'shirt', T06: 'task', T07: 'flag', T08: 'door', T09: 'phone',
-    T10: 'alert', T11: 'zap', T12: 'stop' };
+    T10: 'alert', T11: 'zap', T12: 'stop', T13: 'edit' };
+  var AUTO = 6;
   function svg(name) { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + (ICON[name] || ICON.check) + '</svg>'; }
   function iconFor(a) { return CODE_ICON[a.c] || (a.v > 0 ? 'plus' : 'alert'); }
   function lab(a) { return SHORT[a.c] || a.t; }
@@ -351,7 +402,8 @@ function __main() {
   function fmt(n) { var a = ds(n).split('-'); return a[2] + '/' + a[1]; }
   var WD = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
   function wd(n) { return WD[new Date(n * 864e5).getUTCDay()]; }
-  var START = dn(CFG.start), TODAY = dn(DATA.today);
+  function vnToday() { try { return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' }).format(new Date()); } catch (e) { return DATA.today; } }
+  var START = dn(CFG.start), TODAY = dn(window.__STALE ? vnToday() : DATA.today);
   function weekOf(n) { return Math.floor((n - START) / 7) + 1; }
   function monOf(w) { return START + (w - 1) * 7; }
   var CUR = Math.max(1, Math.min(NWEEKS, weekOf(TODAY)));
@@ -364,12 +416,23 @@ function __main() {
   function hue(n) { var h = 0; for (var i = 0; i < n.length; i++) h = (h * 31 + n.charCodeAt(i)) % 360; return h; }
   function avColor(n) { var h = hue(n); return 'linear-gradient(135deg, hsl(' + h + ' 75% 58%), hsl(' + ((h + 40) % 360) + ' 70% 42%))'; }
   function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
-  var WHO = 'Tổ trưởng ' + DATA.to.toLowerCase() + ' (app)';
-  var state = { week: CUR, date: TODAY, sel: [], min: false, sup: 0, entries: DATA.entries, lastRows: null, armed: null, delArm: null,
-    busy: false, pops: {}, adjust: false, logAll: false };
-  function call(name, args, ok, fail) { var r = google.script.run.withSuccessHandler(ok).withFailureHandler(fail); r[name].apply(r, args); }
+  function store(k, v) { try { if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} }
+  function load(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
+  var WHO = DATA.who || ('Tổ trưởng ' + DATA.to.toLowerCase() + ' (app)');
+  var state = { week: CUR, date: TODAY, sel: [], min: false, sup: 0, xtra: 0, draft: null, need: false,
+    entries: DATA.entries.slice(), undoOp: null, delArm: null, pops: {}, adjust: false, logAll: false,
+    grp: (LOP && load('sotd-grp-' + KEY)) || 'all' };
+  if (state.grp !== 'all' && !(GROUPS && STUDENTS.some(function (n) { return GROUPS[n] === state.grp; }))) state.grp = 'all';
+  function callP(name, args) {
+    return new Promise(function (ok, fail) {
+      var r = google.script.run.withSuccessHandler(ok).withFailureHandler(function (e) { fail(e instanceof Error ? e : new Error(String((e && e.message) || e))); });
+      r[name].apply(r, args);
+    });
+  }
+  function isNet(e) { return /kết nối|phản hồi|network|fetch|timed? ?out|Lỗi mạng/i.test((e && e.message) || ''); }
   function past() { return state.week < CUR; }
   function locked() { return past() && !state.adjust; }
+  function vis() { return state.grp === 'all' || !GROUPS ? STUDENTS : STUDENTS.filter(function (n) { return GROUPS[n] === state.grp; }); }
   function weekScore(name, w) {
     var plus = 0, minus = 0;
     state.entries.forEach(function (e) { if (e.n !== name || weekOf(dn(e.d)) !== w) return; if (e.p > 0) plus += e.p; else minus += -e.p; });
@@ -377,12 +440,134 @@ function __main() {
   }
   var $ = function (id) { return document.getElementById(id); };
 
+  /* ---------- Hàng đợi lưu: hiện ngay trên máy, gửi lên sổ ở nền, tự gửi lại khi mất mạng ---------- */
+  var QK = 'sotd-q-' + KEY, CK = 'sotd-cache-' + KEY;
+  var queue = [];
+  try { queue = JSON.parse(load(QK) || '[]') || []; } catch (e) { queue = []; }
+  var sending = null, retryT = null, tries = 0, doneRows = {}, undoAfter = {};
+  function saveQ() { store(QK, queue.length ? JSON.stringify(queue) : null); }
+  function uid() { return Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10); }
+  function tmpOf(op) { return state.entries.filter(function (e) { return e.tmp === op; }); }
+  function addQueuedTmp() {
+    queue.forEach(function (it) { if (!tmpOf(it.p.op).length) state.entries = state.entries.concat(it.e); });
+  }
+  addQueuedTmp();
+  function mergeAdded(op, added) {
+    var rows = {};
+    added.forEach(function (a) { rows[a.row] = 1; });
+    state.entries = state.entries.filter(function (e) { return e.tmp !== op && !rows[e.row]; }).concat(added);
+  }
+  function syncBadge() {
+    var b = $('sync'), n = queue.length;
+    if (!n) { b.className = 'sync'; b.textContent = ''; return; }
+    b.className = 'sync on' + (tries ? ' err' : '');
+    b.textContent = tries ? 'Chờ mạng · ' + n + ' mục' : 'Đang lưu ' + n + '…';
+  }
+  function pump() {
+    syncBadge();
+    if (sending || !queue.length) return;
+    var it = queue[0];
+    sending = it.p.op;
+    callP('ghiNhan', [KEY, it.p]).then(function (res) {
+      sending = null; tries = 0;
+      queue = queue.filter(function (q) { return q.p.op !== it.p.op; }); saveQ();
+      mergeAdded(it.p.op, res.added || []);
+      doneRows[it.p.op] = res.rows || [];
+      if (undoAfter[it.p.op]) { delete undoAfter[it.p.op]; xoa(res.rows || [], 'Đã hoàn tác'); }
+      saveCache(); render(); pump();
+    }, function (err) {
+      sending = null;
+      if (isNet(err)) {
+        tries++; syncBadge(); clearTimeout(retryT);
+        retryT = setTimeout(pump, Math.min(30000, 2000 * tries));
+        if (tries === 1) toast('Mạng chập chờn: điểm đã giữ trên máy, sẽ tự lưu lại khi có mạng.', false);
+        renderLog();
+        return;
+      }
+      queue = queue.filter(function (q) { return q.p.op !== it.p.op; }); saveQ();
+      state.entries = state.entries.filter(function (e) { return e.tmp !== it.p.op; });
+      toast('Không lưu được: ' + err.message, false);
+      render(); pump();
+    });
+  }
+  window.addEventListener('online', function () { tries = 0; pump(); });
+  function saveCache() {
+    try {
+      var d = {}; for (var k in DATA) d[k] = DATA[k];
+      d.entries = state.entries.filter(function (e) { return !e.tmp; });
+      store(CK, JSON.stringify(d));
+    } catch (e) {}
+  }
+  function beacon() {
+    if (!queue.length || typeof SOTD_API === 'undefined') return;
+    queue.slice(0, 3).forEach(function (it) {
+      try {
+        fetch(SOTD_API, { method: 'POST', body: JSON.stringify({ fn: 'ghiNhan', args: [KEY, it.p] }), headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          credentials: 'omit', mode: 'no-cors', keepalive: true });
+      } catch (e) {}
+    });
+  }
+
+  /* ---------- Lựa chọn đang chờ lưu (bấm Lưu, hoặc tự lưu sau vài giây) ---------- */
+  var autoT = null;
+  function draftAct() {
+    var d = state.draft;
+    if (!d) return null;
+    if (d.code === 'KHAC') return { c: d.pts > 0 ? 'C09' : 'T13', v: d.pts, t: d.pts > 0 ? 'Điểm GV cho thêm' : 'Vi phạm khác', k: 1 };
+    return byCode[d.code];
+  }
+  function noteNeeded() { return state.adjust || (state.draft && state.draft.code === 'KHAC'); }
+  function stopAuto() { clearTimeout(autoT); autoT = null; var b = $('dBar'); b.classList.remove('run'); }
+  function startAuto() {
+    stopAuto();
+    if (!state.draft || state.min || document.activeElement === $('note')) return;
+    if (noteNeeded() && !$('note').value.trim()) return;
+    var b = $('dBar');
+    b.style.setProperty('--t', AUTO + 's'); void b.offsetWidth; b.classList.add('run');
+    autoT = setTimeout(function () { autoT = null; commit(true); }, AUTO * 1000);
+    renderDraft();
+  }
+  function setDraft(d) {
+    state.draft = d; state.need = false;
+    if (!d || d.code === 'KHAC') state.sup = 0;
+    renderSheet(); startAuto();
+  }
+  function commit(auto) {
+    var d = state.draft;
+    if (!d || !state.sel.length || locked()) return false;
+    var note = $('note').value.trim();
+    if (noteNeeded() && !note) {
+      state.need = true; stopAuto(); renderDraft();
+      if (!auto) { $('note').focus(); toast(state.adjust ? 'Tuần đã chốt: hãy ghi lý do điều chỉnh rồi bấm Lưu.' : 'Hãy ghi lý do cộng/trừ điểm khác rồi bấm Lưu.', false); }
+      return false;
+    }
+    stopAuto();
+    var a = draftAct(), v = a.v, names = state.sel.slice();
+    var sup = (!a.k && v < 0) ? state.sup : 0;
+    var p = { op: uid(), date: ds(state.date), names: names, code: d.code, pts: d.code === 'KHAC' ? d.pts : 0, sup: sup, note: note };
+    var shown = state.adjust ? '[Điều chỉnh] ' + note : note;
+    var tmp = names.map(function (n, i) { return { row: 't' + p.op + i, tmp: p.op, d: p.date, n: n, c: a.c, v: v, p: v, s: sup, ok: false, by: WHO, note: shown }; });
+    state.entries = state.entries.concat(tmp);
+    queue.push({ p: p, e: tmp }); saveQ();
+    state.undoOp = p.op;
+    state.sel = []; state.sup = 0; state.xtra = 0; state.min = false; state.draft = null; state.need = false; $('note').value = '';
+    state.pops = {};
+    names.forEach(function (n) { state.pops[n] = sign(v); });
+    setTimeout(function () { state.pops = {}; }, 1400);
+    toast((auto ? 'Đã tự lưu ' : 'Đã lưu ') + sign(v) + ' “' + lab(a) + '” cho ' + names.map(given).join(', '), true);
+    render();
+    pump();
+    return true;
+  }
+  function flushDraft() { if (state.draft) commit(true); }
+
   function setWeek(w) {
     if (w < 1 || w > CUR || isOff(w)) return;
+    flushDraft();
     var dir = w > state.week ? 'l' : 'r';
     state.week = w;
     state.adjust = false;
-    state.sel = []; state.armed = null; state.delArm = null;
+    state.sel = []; state.draft = null; state.delArm = null; stopAuto();
     var mon = monOf(w);
     state.date = w === CUR ? TODAY : mon;
     state.logAll = w !== CUR;
@@ -414,7 +599,8 @@ function __main() {
     if (!past()) { tag.className = 'tag live'; tag.textContent = 'Đang diễn ra'; }
     else if (state.adjust) { tag.className = 'tag'; tag.innerHTML = svg('edit') + 'Đang điều chỉnh'; }
     else { tag.className = 'tag'; tag.innerHTML = svg('lock') + 'Đã chốt'; }
-    $('weekLabel').textContent = 'Từ ' + fmt(mon) + ' đến ' + fmt(mon + 6) + ' · ' + STUDENTS.length + ' bạn trong tổ';
+    var vs = vis();
+    $('weekLabel').textContent = 'Từ ' + fmt(mon) + ' đến ' + fmt(mon + 6) + ' · ' + vs.length + ' bạn' + (LOP ? (state.grp === 'all' ? ' · cả lớp' : ' · ' + state.grp) : ' trong tổ');
     var wb = $('weeks');
     wb.innerHTML = '';
     var selEl = null;
@@ -439,11 +625,29 @@ function __main() {
         b.type = 'button'; b.className = 'chip';
         b.innerHTML = '<b>' + (d === TODAY ? 'Hôm nay' : wd(d)) + '</b><small class="num">' + fmt(d) + '</small>';
         b.setAttribute('aria-pressed', String(d === state.date));
-        b.onclick = function () { if (d === state.date) return; state.date = d; state.logAll = false; render(); stagger('log'); };
+        b.onclick = function () { if (d === state.date) return; flushDraft(); state.date = d; state.logAll = false; render(); stagger('log'); };
         db.appendChild(b);
       })(d);
     }
     if (scroll) { var sd = db.querySelector('[aria-pressed="true"]'); db.scrollLeft = sd ? Math.max(0, sd.offsetLeft - db.offsetLeft) : db.scrollWidth; }
+  }
+  function renderGroups() {
+    var box = $('grpF');
+    if (!LOP || !GROUPS) { box.hidden = true; return; }
+    box.hidden = false;
+    var gs = [];
+    STUDENTS.forEach(function (n) { var g = GROUPS[n]; if (g && gs.indexOf(g) < 0) gs.push(g); });
+    gs.sort();
+    box.innerHTML = '';
+    ['all'].concat(gs).forEach(function (g) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      var cnt = g === 'all' ? STUDENTS.length : STUDENTS.filter(function (n) { return GROUPS[n] === g; }).length;
+      b.textContent = (g === 'all' ? 'Cả lớp' : g) + ' · ' + cnt;
+      b.setAttribute('aria-pressed', String(state.grp === g));
+      b.onclick = function () { if (state.grp === g) return; state.grp = g; store('sotd-grp-' + KEY, g); render(); stagger('grid'); };
+      box.appendChild(b);
+    });
   }
   function renderLock() {
     var box = $('lock');
@@ -454,23 +658,25 @@ function __main() {
       ? svg('edit') + '<div><b>Đang điều chỉnh tuần ' + state.week + '</b>Mỗi lần ghi bổ sung phải nhập lý do ở ô Ghi chú. GVCN sẽ thấy dấu [Điều chỉnh].</div><button type="button" id="lockBtn">Xong</button>'
       : svg('lock') + '<div><b>Tuần ' + state.week + ' đã chốt · chỉ xem</b>Nếu có thay đổi hoặc phát sinh, bấm Điều chỉnh.</div><button type="button" id="lockBtn">Điều chỉnh</button>';
     $('lockBtn').onclick = function () {
+      if (state.adjust) flushDraft();
       state.adjust = !state.adjust;
-      if (!state.adjust) { state.sel = []; state.armed = null; }
-      else toast('Chọn ngày, chạm tên bạn rồi chọn nội dung. Nhớ ghi lý do.', false);
+      if (!state.adjust) { state.sel = []; state.draft = null; stopAuto(); }
+      else toast('Chọn ngày, chạm tên bạn, ghi lý do rồi chọn nội dung và bấm Lưu.', false);
       render();
     };
   }
   function renderSummary() {
-    var w = state.week, sum = 0, nTot = 0, scores = [];
-    STUDENTS.forEach(function (n) { var s = weekScore(n, w); sum += s; scores.push([n, s]); if (s >= CFG.tot) nTot++; });
-    var avg = STUDENTS.length ? sum / STUDENTS.length : 0;
+    var w = state.week, sum = 0, nTot = 0, scores = [], vs = vis(), set = {};
+    vs.forEach(function (n) { set[n] = 1; var s = weekScore(n, w); sum += s; scores.push([n, s]); if (s >= CFG.tot) nTot++; });
+    var avg = vs.length ? sum / vs.length : 0;
     var lv = level(avg);
     var ring = $('avgRing');
     ring.style.setProperty('--p', Math.round(avg));
     ring.style.setProperty('--c', 'var(--' + lv[1] + ')');
     $('avgVal').textContent = avg.toFixed(avg % 1 ? 1 : 0);
+    ring.querySelector('small').textContent = LOP ? (state.grp === 'all' ? 'TB lớp' : 'TB ' + state.grp.toLowerCase()) : 'TB tổ';
     var plus = 0, minus = 0;
-    state.entries.forEach(function (e) { if (weekOf(dn(e.d)) === w) { if (e.v > 0) plus++; else minus++; } });
+    state.entries.forEach(function (e) { if (set[e.n] && weekOf(dn(e.d)) === w) { if (e.v > 0) plus++; else minus++; } });
     $('sPlus').textContent = plus; $('sMinus').textContent = minus; $('sTot').textContent = nTot;
     scores.sort(function (a, b) { return b[1] - a[1]; });
     var top = scores.filter(function (x) { return x[1] > CFG.base; }).slice(0, 3);
@@ -488,13 +694,14 @@ function __main() {
     var w = state.week;
     $('grid').innerHTML = '';
     $('grid').classList.toggle('locked', locked());
-    STUDENTS.forEach(function (n) {
+    vis().forEach(function (n) {
       var on = state.sel.indexOf(n) >= 0, s = weekScore(n, w), lv = level(s);
       var b = document.createElement('button');
       b.type = 'button'; b.className = 'st'; b.setAttribute('aria-pressed', String(on));
       b.setAttribute('aria-label', n + ', ' + s + ' điểm, mức ' + lv[0]);
+      var sub = rest(n) + (LOP && GROUPS && state.grp === 'all' ? ' · ' + (GROUPS[n] || '') : '');
       b.innerHTML = '<span class="ring" style="--p:' + s + ';--c:var(--' + lv[1] + ')"><span class="av" style="background:' + avColor(n) + '">' + esc(given(n).charAt(0)) + '</span></span>' +
-        '<span class="nm"><b>' + esc(given(n)) + '</b><small>' + esc(rest(n)) + '</small></span>' +
+        '<span class="nm"><b>' + esc(given(n)) + '</b><small>' + esc(sub) + '</small></span>' +
         '<span class="pill ' + lv[1] + ' num">' + s + ' · ' + lv[0] + '</span>' +
         (on ? '<span class="check">' + svg('check') + '</span>' : '') +
         (state.pops[n] ? '<span class="pop ' + (state.pops[n].charAt(0) === '+' ? 'p' : 'm') + '">' + state.pops[n] + '</span>' : '');
@@ -502,10 +709,29 @@ function __main() {
         if (locked()) { toast('Tuần ' + state.week + ' đã chốt. Bấm "Điều chỉnh" nếu có thay đổi hoặc phát sinh.', false); return; }
         var i = state.sel.indexOf(n);
         if (i >= 0) state.sel.splice(i, 1); else { if (!state.sel.length) state.min = false; state.sel.push(n); }
+        if (!state.sel.length) { state.draft = null; state.xtra = 0; stopAuto(); }
         render();
+        if (state.draft) startAuto();
       };
       $('grid').appendChild(b);
     });
+  }
+  function renderDraft() {
+    var box = $('draft'), a = draftAct();
+    box.hidden = !a;
+    if (!a) { stopAuto(); return; }
+    var c = cls(a.v);
+    $('dIco').className = 'ico ' + c;
+    $('dIco').innerHTML = svg(iconFor(a));
+    $('dTitle').textContent = sign(a.v) + ' · ' + lab(a);
+    var who = state.sel.length === 1 ? state.sel[0] : state.sel.length + ' bạn';
+    var note = $('note').value.trim();
+    box.classList.toggle('need', state.need || (noteNeeded() && !note));
+    $('dSub').textContent = (noteNeeded() && !note) ? (state.adjust ? 'Cần ghi lý do điều chỉnh ở ô phía trên' : 'Cần ghi lý do ở ô Ghi chú phía trên')
+      : who + (note ? ' · ' + note : '') + (autoT ? ' · tự lưu sau ' + AUTO + ' giây' : '');
+    var showSup = !a.k && a.v < 0;
+    $('supBox').style.display = showSup ? '' : 'none';
+    $('supOut').textContent = state.sup;
   }
   function renderSheet() {
     var open = state.sel.length > 0;
@@ -513,7 +739,7 @@ function __main() {
     sh.classList.toggle('open', open);
     sh.classList.toggle('min', state.min);
     document.body.classList.toggle('sheet-open', open);
-    sh.classList.toggle('busy', state.busy);
+    $('toast').classList.toggle('up', open);
     $('faces').innerHTML = state.sel.slice(0, 4).map(function (n) { return '<span style="background:' + avColor(n) + '">' + esc(given(n).charAt(0)) + '</span>'; }).join('');
     $('who').textContent = open ? (state.sel.length === 1 ? state.sel[0] : state.sel.length + ' bạn: ' + state.sel.map(given).join(', ')) : '';
     var sub = $('whoSub');
@@ -522,48 +748,56 @@ function __main() {
     var tm = $('toggleMin');
     tm.textContent = state.min ? 'Chọn việc' : 'Thêm bạn';
     tm.className = state.min ? 'pri' : '';
-    $('supOut').textContent = state.sup;
     var note = $('note');
-    note.placeholder = state.adjust ? 'Lý do điều chỉnh (bắt buộc)' : 'Ghi chú (không bắt buộc)';
-    note.classList.toggle('req', state.adjust && !note.value.trim());
+    note.placeholder = state.adjust ? 'Lý do điều chỉnh (bắt buộc)' : noteNeeded() ? 'Lý do (bắt buộc)' : 'Ghi chú / lý do';
+    note.classList.toggle('req', noteNeeded() && !note.value.trim());
+    var x = state.xtra;
+    $('xOut').textContent = x > 0 ? '+' + x : x < 0 ? '−' + (-x) : '0';
+    $('xtra').className = 'xtra' + (x > 0 ? ' p' : x < 0 ? ' m' : '');
     var box = $('acts');
     box.innerHTML = '';
     var lastGrp = '';
+    var chosen = state.draft && state.draft.code;
     ACTS.forEach(function (a) {
       var c = cls(a.v);
       if (a.g !== lastGrp) {
         var g = document.createElement('div');
         g.className = 'grp ' + c;
-        g.innerHTML = esc(a.g) + (a.v <= -5 ? ' <em>chạm 2 lần để ghi</em>' : '');
+        g.innerHTML = esc(a.g);
         box.appendChild(g);
         lastGrp = a.g;
       }
       var b = document.createElement('button');
-      b.type = 'button'; b.className = 'act ' + c + (state.armed === a.c ? ' armed' : '');
+      b.type = 'button'; b.className = 'act ' + c + (chosen === a.c ? ' chosen' : '');
       b.title = a.t;
       b.innerHTML = '<span class="ico ' + c + '">' + svg(iconFor(a)) + '</span><span class="t">' + esc(lab(a)) + '</span><span class="v num">' + sign(a.v) + '</span>';
       b.onclick = function () { pick(a); };
       box.appendChild(b);
     });
+    renderDraft();
   }
   function rowEl(e) {
     var a = byCode[e.c] || { c: e.c, t: e.c, v: e.v };
     var c = cls(e.v);
     var r = document.createElement('div');
-    r.className = 'row';
+    r.className = 'row' + (e.tmp ? ' tmp' : '');
     var extra = '';
     if (e.s && !e.ok) extra = '<span class="pending">Đề xuất trừ thêm ' + e.s + ' · chờ GVCN duyệt</span>';
     if (e.s && e.ok) extra = '<span class="pending">GVCN đã duyệt trừ thêm ' + e.s + '</span>';
     r.innerHTML = '<span class="ico ' + c + '">' + svg(iconFor(a)) + '</span>' +
-      '<span class="what"><b>' + esc(lab(a)) + '</b><small>' + esc(e.n) + (e.note ? ' · ' + esc(e.note) : '') + (e.by && e.by !== WHO ? ' · ' + esc(e.by) : '') + '</small>' + extra + '</span>';
+      '<span class="what"><b>' + esc(lab(a)) + '</b><small>' + esc(e.n) + (e.note ? ' · ' + esc(e.note) : '') + (e.by && e.by !== WHO ? ' · ' + esc(e.by.replace(' (app)', '')) : '') + '</small>' + extra + '</span>';
     var right = document.createElement('div');
     right.innerHTML = '<div class="val ' + c + ' num">' + sign(e.p || e.v) + '</div>';
-    if (e.by === WHO && !e.ok && !locked()) {
+    if (e.tmp) {
+      var wt = document.createElement('span');
+      wt.className = 'wait' + (tries ? ' err' : '');
+      wt.textContent = tries ? 'Chờ mạng' : 'Đang lưu…';
+      right.appendChild(wt);
+    } else if (e.by === WHO && !e.ok && !locked()) {
       var d = document.createElement('button');
       d.type = 'button'; d.className = 'del' + (state.delArm === e.row ? ' arm' : '');
       d.textContent = state.delArm === e.row ? 'Chạm để xóa' : 'Xóa';
       d.onclick = function () {
-        if (state.busy) return;
         if (state.delArm !== e.row) { state.delArm = e.row; renderLog(); setTimeout(function () { if (state.delArm === e.row) { state.delArm = null; renderLog(); } }, 3000); return; }
         state.delArm = null;
         xoa([e.row], 'Đã xóa: ' + lab(a) + ' · ' + given(e.n));
@@ -574,13 +808,15 @@ function __main() {
     return r;
   }
   function renderLog() {
-    var w = state.week;
+    var w = state.week, set = {};
+    vis().forEach(function (n) { set[n] = 1; });
     $('logDay').textContent = state.date === TODAY ? 'Hôm nay' : wd(state.date) + ' ' + fmt(state.date);
     $('logDay').setAttribute('aria-pressed', String(!state.logAll));
     $('logWeek').setAttribute('aria-pressed', String(state.logAll));
     $('logTitle').textContent = state.logAll ? 'Ghi nhận tuần ' + w : 'Đã ghi ' + (state.date === TODAY ? 'hôm nay' : 'ngày ' + fmt(state.date));
-    var items = state.entries.filter(function (e) { var d = dn(e.d); return state.logAll ? weekOf(d) === w : d === state.date; })
-      .sort(function (a, b) { return dn(b.d) - dn(a.d) || b.row - a.row; });
+    function rk(e) { return e.tmp ? 1e9 + state.entries.indexOf(e) : e.row; }
+    var items = state.entries.filter(function (e) { var d = dn(e.d); return set[e.n] && (state.logAll ? weekOf(d) === w : d === state.date); })
+      .sort(function (a, b) { return dn(b.d) - dn(a.d) || rk(b) - rk(a); });
     var box = $('log');
     box.innerHTML = '';
     if (!items.length) {
@@ -600,49 +836,37 @@ function __main() {
       box.appendChild(rowEl(e));
     });
   }
-  var armTimer = null;
   function pick(a) {
-    if (state.busy || locked()) return;
-    var note = $('note').value.trim();
-    if (state.adjust && !note) {
-      toast('Tuần đã chốt: hãy ghi lý do điều chỉnh vào ô Ghi chú trước.', false);
-      $('note').classList.add('req');
-      $('note').focus();
-      return;
-    }
-    if (a.v <= -5 && state.armed !== a.c) {
-      state.armed = a.c; renderSheet();
-      clearTimeout(armTimer);
-      armTimer = setTimeout(function () { state.armed = null; renderSheet(); }, 3000);
-      return;
-    }
-    state.armed = null;
-    var names = state.sel.slice();
-    var payload = { date: ds(state.date), names: names, code: a.c, sup: a.v < 0 ? state.sup : 0, note: note };
-    state.busy = true;
-    toast('Đang ghi…', false);
-    renderSheet();
-    call('ghiNhan', [KEY, payload], function (res) {
-      state.busy = false;
-      state.entries = res.entries;
-      state.lastRows = res.rows;
-      state.sel = []; state.sup = 0; state.min = false; $('note').value = '';
-      state.pops = {};
-      names.forEach(function (n) { state.pops[n] = sign(a.v); });
-      setTimeout(function () { state.pops = {}; }, 1400);
-      toast('Đã ghi ' + sign(a.v) + ' “' + lab(a) + '” cho ' + names.map(given).join(', '), true);
-      render();
-    }, function (err) {
-      state.busy = false;
-      toast('Chưa ghi được: ' + ((err && err.message) || err) + ' Thử lại sau ít phút.', false);
-      render();
-    });
+    if (locked()) return;
+    state.xtra = 0;
+    if (state.draft && state.draft.code === a.c) { commit(false); return; }
+    setDraft({ code: a.c });
+  }
+  function setXtra(x) {
+    if (locked()) return;
+    state.xtra = Math.max(-20, Math.min(20, x));
+    if (state.xtra) setDraft({ code: 'KHAC', pts: state.xtra });
+    else if (state.draft && state.draft.code === 'KHAC') setDraft(null);
+    else renderSheet();
+    if (state.xtra && !$('note').value.trim()) toast('Ghi lý do vào ô Ghi chú (bắt buộc với điểm khác), rồi bấm Lưu.', false);
   }
   function xoa(rows, msg) {
-    state.busy = true;
-    toast('Đang xóa…', false);
-    call('xoaGhiNhan', [KEY, rows], function (res) { state.busy = false; state.entries = res.entries; toast(msg, false); render(); },
-      function (err) { state.busy = false; toast('Chưa xóa được: ' + ((err && err.message) || err), false); render(); });
+    var gone = {}, kept = [];
+    rows.forEach(function (r) { gone[r] = 1; });
+    var removed = state.entries.filter(function (e) { return gone[e.row]; });
+    state.entries = state.entries.filter(function (e) { return !gone[e.row]; });
+    toast(msg, false);
+    render();
+    callP('xoaGhiNhan', [KEY, rows, true]).then(function (res) {
+      var ok = {}; (res.rows || []).forEach(function (r) { ok[r] = 1; });
+      removed.forEach(function (e) { if (!ok[e.row]) kept.push(e); });
+      if (kept.length) { state.entries = state.entries.concat(kept); toast('Có ' + kept.length + ' dòng không xóa được (đã được GVCN duyệt hoặc không phải bạn ghi).', false); render(); }
+      saveCache();
+    }, function (err) {
+      state.entries = state.entries.concat(removed);
+      toast('Chưa xóa được: ' + err.message, false);
+      render();
+    });
   }
   var tTimer = null;
   function toast(msg, canUndo) {
@@ -653,24 +877,70 @@ function __main() {
     clearTimeout(tTimer);
     tTimer = setTimeout(function () { $('toast').classList.remove('show'); }, canUndo ? 8000 : 4000);
   }
-  $('undo').onclick = function () { if (!state.lastRows || state.busy) return; var rows = state.lastRows; state.lastRows = null; xoa(rows, 'Đã hoàn tác'); };
-  $('reload').onclick = function () {
-    call('layDuLieu', [KEY], function (d) { state.entries = d.entries; render(); toast('Đã cập nhật điểm mới nhất', false); },
-      function () { toast('Chưa tải lại được. Kiểm tra mạng rồi thử lại.', false); });
+  $('undo').onclick = function () {
+    var op = state.undoOp;
+    if (!op) return;
+    state.undoOp = null;
+    $('toast').classList.remove('show');
+    var idx = -1;
+    queue.forEach(function (q, i) { if (q.p.op === op) idx = i; });
+    if (idx >= 0 && sending !== op) {
+      queue.splice(idx, 1); saveQ();
+      state.entries = state.entries.filter(function (e) { return e.tmp !== op; });
+      toast('Đã hoàn tác', false); render(); syncBadge(); return;
+    }
+    if (sending === op) { undoAfter[op] = 1; state.entries = state.entries.filter(function (e) { return e.tmp !== op; }); render(); toast('Đã hoàn tác', false); return; }
+    if (doneRows[op]) xoa(doneRows[op], 'Đã hoàn tác');
   };
+  var lastSync = Date.now();
+  function apply(d, quiet) {
+    lastSync = Date.now();
+    DATA = d; CFG = d.cfg; STUDENTS = d.students; GROUPS = d.groups || null; LOP = !!d.lop; WHO = d.who || WHO;
+    ACTS = d.crit.filter(function (a) { return !a.k; });
+    byCode = {}; d.crit.forEach(function (a) { byCode[a.c] = a; });
+    OFF = CFG.off || []; START = dn(CFG.start);
+    var t = dn(d.today);
+    if (t !== TODAY) { var wasCur = state.week === CUR; TODAY = t; CUR = Math.max(1, Math.min(NWEEKS, weekOf(TODAY))); if (wasCur) { state.week = CUR; state.date = TODAY; } }
+    var pend = state.entries.filter(function (e) { return e.tmp; });
+    state.entries = d.entries.concat(pend);
+    state.sel = state.sel.filter(function (n) { return STUDENTS.indexOf(n) >= 0; });
+    saveCache();
+    render();
+    if (!quiet) toast('Đã cập nhật điểm mới nhất', false);
+  }
+  window.sotdApply = function (d) { apply(d, true); };
+  function refresh(quiet) {
+    return callP('layDuLieu', [KEY]).then(function (d) { apply(d, quiet); },
+      function (e) { if (!quiet) toast('Chưa tải lại được. Kiểm tra mạng rồi thử lại.', false); });
+  }
+  $('reload').onclick = function () { flushDraft(); toast('Đang tải lại…', false); refresh(false); };
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'hidden') { flushDraft(); beacon(); }
+    else { pump(); if (Date.now() - lastSync > 60000 && !state.sel.length) refresh(true); }
+  });
+  window.addEventListener('pagehide', function () { flushDraft(); beacon(); });
   $('all').onclick = function () {
     if (locked()) { toast('Tuần ' + state.week + ' đã chốt. Bấm "Điều chỉnh" nếu có thay đổi hoặc phát sinh.', false); return; }
-    state.sel = STUDENTS.slice(); state.min = false; render();
+    var vs = vis();
+    vs.forEach(function (n) { if (state.sel.indexOf(n) < 0) state.sel.push(n); });
+    state.min = false; render(); if (state.draft) startAuto();
   };
-  $('none').onclick = function () { state.sel = []; render(); };
-  $('close').onclick = function () { state.sel = []; state.armed = null; state.min = false; render(); };
-  $('toggleMin').onclick = function () { state.min = !state.min; renderSheet(); };
+  $('none').onclick = function () { state.sel = []; state.draft = null; state.xtra = 0; stopAuto(); render(); };
+  $('close').onclick = function () { flushDraft(); state.sel = []; state.draft = null; state.xtra = 0; state.min = false; stopAuto(); render(); };
+  $('dCancel').onclick = function () { state.xtra = 0; setDraft(null); };
+  $('dSave').onclick = function () { commit(false); };
+  $('toggleMin').onclick = function () { state.min = !state.min; renderSheet(); if (state.min) stopAuto(); else startAuto(); };
   $('logDay').onclick = function () { if (!state.logAll) return; state.logAll = false; renderLog(); stagger('log'); };
   $('logWeek').onclick = function () { if (state.logAll) return; state.logAll = true; renderLog(); stagger('log'); };
-  $('note').oninput = function () { $('note').classList.toggle('req', state.adjust && !$('note').value.trim()); };
-  $('supPlus').onclick = function () { state.sup = Math.min(10, state.sup + 1); renderSheet(); };
-  $('supMinus').onclick = function () { state.sup = Math.max(0, state.sup - 1); renderSheet(); };
-  function render(scroll) { renderHeader(scroll); renderLock(); renderSummary(); renderGrid(); renderSheet(); renderLog(); }
+  $('note').oninput = function () { state.need = false; $('note').classList.toggle('req', noteNeeded() && !$('note').value.trim()); renderDraft(); };
+  $('note').onfocus = function () { stopAuto(); renderDraft(); };
+  $('note').onblur = function () { startAuto(); renderDraft(); };
+  $('note').onkeydown = function (e) { if (e.key === 'Enter') { e.preventDefault(); if (state.draft) commit(false); else $('note').blur(); } };
+  $('xPlus').onclick = function () { setXtra(state.xtra + 1); };
+  $('xMinus').onclick = function () { setXtra(state.xtra - 1); };
+  $('supPlus').onclick = function () { state.sup = Math.min(10, state.sup + 1); renderDraft(); startAuto(); };
+  $('supMinus').onclick = function () { state.sup = Math.max(0, state.sup - 1); renderDraft(); startAuto(); };
+  function render(scroll) { renderHeader(scroll); renderLock(); renderGroups(); renderSummary(); renderGrid(); renderSheet(); renderLog(); syncBadge(); }
   var THEMES = ['auto', 'light', 'dark'], TLAB = { auto: 'Tự động theo máy', light: 'Sáng', dark: 'Tối' };
   var theme = 'auto';
   try { theme = localStorage.getItem('sotd-theme') || 'auto'; } catch (e) {}
@@ -694,7 +964,7 @@ function __main() {
   var sx = null, sy = 0, st0 = 0;
   document.addEventListener('touchstart', function (e) {
     var t = e.target;
-    if (state.sel.length || e.touches.length > 1 || (t.closest && t.closest('.strip, .sheet, .toast, input'))) { sx = null; return; }
+    if (state.sel.length || e.touches.length > 1 || (t.closest && t.closest('.strip, .grp-f, .sheet, .toast, input'))) { sx = null; return; }
     sx = e.touches[0].clientX; sy = e.touches[0].clientY; st0 = Date.now();
   }, { passive: true });
   document.addEventListener('touchend', function (e) {
@@ -718,15 +988,17 @@ function __main() {
     sh.classList.remove('dragging');
     sh.style.transform = '';
     if (gd > 70) {
-      if (!state.min) { state.min = true; renderSheet(); }
-      else { state.sel = []; state.armed = null; state.min = false; render(); }
+      if (!state.min) { state.min = true; stopAuto(); renderSheet(); }
+      else { flushDraft(); state.sel = []; state.draft = null; state.min = false; render(); }
     }
   }
   gz.addEventListener('touchend', endDrag);
   gz.addEventListener('touchcancel', endDrag);
-  gz.onclick = function () { if (gd > 5) return; state.min = !state.min; renderSheet(); };
+  gz.onclick = function () { if (gd > 5) return; state.min = !state.min; renderSheet(); if (state.min) stopAuto(); else startAuto(); };
+  if (!window.__STALE) saveCache();
   render(true);
   stagger('grid'); stagger('log');
+  pump();
 })();
 }
 </script>
@@ -734,15 +1006,28 @@ function __main() {
 (function () {
   var k = sotdParam('k') || sotdStore('sotd-tok');
   if (!k) { location.replace('to-truong.html'); return; }
-  sotdLoading('Đang tải dữ liệu của tổ…');
+  function het(e) {
+    if (/hợp lệ|hiệu lực/.test(e.message)) {
+      try { localStorage.removeItem('sotd-cache-' + k); } catch (x) {}
+      location.replace('to-truong.html?msg=' + encodeURIComponent('Link này đã hết hiệu lực hoặc quyền đã được GVCN thay đổi. Hãy đăng nhập lại bằng email.'));
+      return true;
+    }
+  }
+  var c = null;
+  try { c = JSON.parse(localStorage.getItem('sotd-cache-' + k) || 'null'); } catch (e) {}
+  if (c && c.cfg && c.students) {
+    window.__RAW = sotdB64(JSON.stringify(c)); window.__KEY = k; window.__STALE = true;
+    document.title = 'Sổ thi đua 12A3 · ' + c.to;
+    __main();
+    sotdCall('layDuLieu', [k]).then(function (d) { window.__STALE = false; if (window.sotdApply) window.sotdApply(d); }, het);
+    return;
+  }
+  sotdLoading('Đang tải dữ liệu…');
   sotdCall('layDuLieu', [k]).then(function (d) {
     window.__RAW = sotdB64(JSON.stringify(d)); window.__KEY = k;
     document.title = 'Sổ thi đua 12A3 · ' + d.to;
     __main(); sotdDone();
-  }, function (e) {
-    if (/hợp lệ|hiệu lực/.test(e.message)) location.replace('to-truong.html?msg=' + encodeURIComponent('Link này đã hết hiệu lực hoặc quyền đã được GVCN thay đổi. Hãy đăng nhập lại bằng email.'));
-    else sotdError('Chưa tải được dữ liệu', e.message);
-  });
+  }, function (e) { if (!het(e)) sotdError('Chưa tải được dữ liệu', e.message); });
 })();
 </script>
 </body>
