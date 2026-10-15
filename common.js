@@ -1,6 +1,16 @@
 /* Sổ thi đua 12A3 – cầu nối giữa trang web (GitHub Pages) và Google Apps Script */
 var SOTD_API = 'https://script.google.com/macros/s/AKfycbymasMaCIwiS37FZUG3LpHf8HhodfCD3dlPUanZzQMdhWSAS8dsEtN5zUkdOxRYJVnz/exec';
-function sotdCall(fn, args) {
+var SOTD_READ = { duLieuLopXem: 1, layHocSinh: 1, layDuLieu: 1, kiemTraQuyenToken: 1 };
+function sotdCall(fn, args, lan) {
+  lan = lan || 0;
+  return sotdCall1(fn, args).catch(function (e) {
+    if (SOTD_READ[fn] && lan < 2 && /kết nối/.test(e.message)) {
+      return new Promise(function (ok) { setTimeout(ok, 1500 * (lan + 1)); }).then(function () { return sotdCall(fn, args, lan + 1); });
+    }
+    throw e;
+  });
+}
+function sotdCall1(fn, args) {
   return fetch(SOTD_API, {
     method: 'POST', body: JSON.stringify({ fn: fn, args: args || [] }),
     headers: { 'Content-Type': 'text/plain;charset=utf-8' }, credentials: 'omit', redirect: 'follow', cache: 'no-store'
