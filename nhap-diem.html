@@ -193,22 +193,25 @@ body.sheet-open .wrap { padding-bottom: 60vh; }
 .pk[aria-pressed="true"] { background: var(--brand); border-color: var(--brand); color: #fff; box-shadow: 0 4px 12px color-mix(in srgb, var(--brand) 35%, transparent); }
 .pk[aria-pressed="true"] small { color: rgba(255,255,255,.85); }
 .sheet.nosel .acts, .sheet.nosel .notebar { opacity: .45; }
-.hist { flex-shrink: 0; border: 1px solid var(--line); border-radius: 14px; background: var(--bg); overflow: hidden; }
-.hist[hidden] { display: none; }
-.hist-h { width: 100%; border: 0; background: transparent; display: flex; align-items: center; gap: 8px; padding: 8px 12px; font-size: 13px; font-weight: 800; text-align: left; }
-.hist-h span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.hist-h em { font-style: normal; font-weight: 900; font-size: 12px; padding: 2px 8px; border-radius: 999px; }
-.hist-h em.p { background: var(--plus-soft); color: var(--plus); } .hist-h em.m { background: var(--minus-soft); color: var(--minus); }
-.hist-h i { font-style: normal; color: var(--muted); font-size: 12px; transition: transform .2s ease; }
-.hist.open .hist-h i { transform: rotate(180deg); }
-.hist-b { display: none; max-height: 30vh; overflow-y: auto; padding: 0 8px 8px; gap: 6px; overscroll-behavior: contain; }
-.hist.open .hist-b { display: grid; }
-.hist-b .row { padding: 7px 10px; box-shadow: none; border: 1px solid var(--line); grid-template-columns: 34px minmax(0, 1fr) auto; gap: 10px; }
-.hist-b .ico { width: 34px; height: 34px; border-radius: 10px; }
-.hist-b .ico svg { width: 18px; height: 18px; }
-.hist-b .what b { font-size: 13px; } .hist-b .val { font-size: 16px; }
-.hist-b .del { font-size: 13px; padding: 4px 0; }
-.hist-e { font-size: 12.5px; color: var(--muted); padding: 2px 4px 4px; }
+.tabs2 { flex-shrink: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; background: var(--bg); border: 1px solid var(--line); border-radius: 14px; padding: 4px; }
+.tabs2 button { border: 0; background: transparent; border-radius: 10px; min-height: 40px; font-size: 14px; font-weight: 800; color: var(--muted); display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.tabs2 button svg { width: 17px; height: 17px; }
+.tabs2 button[aria-selected="true"] { background: var(--card); color: var(--ink); box-shadow: var(--shadow-s); }
+.tabs2 b { min-width: 22px; padding: 1px 7px; border-radius: 999px; background: var(--brand); color: #fff; font-size: 12px; }
+.tabs2 b.zero { background: var(--line); color: var(--muted); }
+.tabs2 b.bump { animation: bump .5s ease; }
+@keyframes bump { 40% { transform: scale(1.35); } }
+.sheet.tab-xem .notebar, .sheet.tab-xem .acts, .sheet.tab-xem .draft { display: none !important; }
+.sheet:not(.tab-xem) .hist { display: none; }
+.hist { flex: 1 1 auto; min-height: 0; overflow-y: auto; display: grid; align-content: start; gap: 8px; padding: 2px; overscroll-behavior: contain; }
+.hist-sum { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.hist-sum div { background: var(--bg); border-radius: 12px; padding: 8px 10px; }
+.hist-sum b { display: block; font-size: 18px; font-weight: 900; line-height: 1.1; }
+.hist-sum small { font-size: 11px; color: var(--muted); font-weight: 700; }
+.hist-sum .p b { color: var(--plus); } .hist-sum .m b { color: var(--minus); }
+.hist .dayhead { margin: 4px 2px 0; }
+.hist .row { box-shadow: none; border: 1px solid var(--line); }
+.hist-e { font-size: 13px; color: var(--muted); padding: 4px 4px 8px; text-align: center; }
 .notebar { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; flex-shrink: 0; }
 .xtra { display: flex; align-items: center; gap: 4px; background: var(--bg); border-radius: 14px; padding: 4px; border: 1px solid var(--line); }
 .xtra label { font-size: 10.5px; font-weight: 800; line-height: 1.1; color: var(--muted); padding: 0 2px 0 4px; text-align: center; }
@@ -344,7 +347,11 @@ html, body { transition: background-color .3s ease, color .3s ease; }
     <button type="button" id="close">Đóng</button>
   </div>
   <div class="pick" id="pick" role="group" aria-label="Chọn bạn"></div>
-  <div class="hist" id="hist" hidden></div>
+  <div class="tabs2" role="tablist" aria-label="Chế độ">
+    <button type="button" role="tab" id="tGhi" aria-selected="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Ghi điểm</button>
+    <button type="button" role="tab" id="tXem" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg>Đã ghi <b id="tCnt" class="num">0</b></button>
+  </div>
+  <div class="hist" id="hist" role="tabpanel"></div>
   <div class="notebar">
     <input id="note" type="text" placeholder="Ghi chú / lý do" autocomplete="off" maxlength="180" enterkeyhint="done">
     <div class="xtra" id="xtra" title="Điểm giáo viên cho thêm (+) hoặc vi phạm khác (−). Bắt buộc ghi lý do.">
@@ -446,7 +453,7 @@ function __main() {
   function store(k, v) { try { if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) {} }
   function load(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
   var WHO = DATA.who || ('Tổ trưởng ' + DATA.to.toLowerCase() + ' (app)');
-  var state = { week: CUR, date: TODAY, sel: [], open: false, histOpen: true, min: false, sup: 0, xtra: 0, draft: null, need: false,
+  var state = { week: CUR, date: TODAY, sel: [], open: false, tab: 'ghi', min: false, sup: 0, xtra: 0, draft: null, need: false,
     entries: DATA.entries.slice(), undoOp: null, delArm: null, pops: {}, adjust: false, logAll: false,
     grp: (LOP && load('sotd-grp-' + KEY)) || 'all' };
   if (state.grp !== 'all' && !(GROUPS && STUDENTS.some(function (n) { return GROUPS[n] === state.grp; }))) state.grp = 'all';
@@ -742,31 +749,59 @@ function __main() {
   function toggleSel(n, fromGrid) {
     var i = state.sel.indexOf(n);
     if (i >= 0) state.sel.splice(i, 1); else state.sel.push(n);
-    if (fromGrid && state.sel.length) { state.open = true; state.min = false; }
+    if (fromGrid && state.sel.length) { if (!state.open) state.tab = 'ghi'; state.open = true; state.min = false; }
     if (!state.sel.length) stopAuto();
     if (fromGrid) render(); else { renderSheet(); renderGrid(); }
     if (state.draft) startAuto();
   }
+  var lastCnt = -1;
   function renderHist() {
-    var box = $('hist');
-    if (!state.open || !state.sel.length) { box.hidden = true; return; }
-    box.hidden = false;
+    var box = $('hist'), sh = $('sheet');
     var w = state.week, set = {};
     state.sel.forEach(function (n) { set[n] = 1; });
-    var items = state.entries.filter(function (e) { return set[e.n] && weekOf(dn(e.d)) === w; })
-      .sort(function (a, b) { return dn(b.d) - dn(a.d) || (b.tmp ? 1 : 0) - (a.tmp ? 1 : 0) || b.row - a.row; });
+    var items = state.sel.length ? state.entries.filter(function (e) { return set[e.n] && weekOf(dn(e.d)) === w; })
+      .sort(function (a, b) { return dn(b.d) - dn(a.d) || (b.tmp ? 1 : 0) - (a.tmp ? 1 : 0) || b.row - a.row; }) : [];
+    var cnt = $('tCnt');
+    cnt.textContent = items.length;
+    cnt.className = 'num' + (items.length ? '' : ' zero');
+    if (lastCnt >= 0 && items.length > lastCnt) { void cnt.offsetWidth; cnt.classList.add('bump'); }
+    lastCnt = items.length;
+    var xem = state.tab === 'xem';
+    sh.classList.toggle('tab-xem', xem);
+    $('tGhi').setAttribute('aria-selected', String(!xem));
+    $('tXem').setAttribute('aria-selected', String(xem));
+    if (!xem) return;
+    box.innerHTML = '';
+    if (!state.sel.length) { box.innerHTML = '<div class="hist-e">Chạm tên bạn ở hàng trên để xem các mục đã ghi.</div>'; return; }
     var plus = 0, minus = 0;
     items.forEach(function (e) { var v = e.p || e.v; if (v > 0) plus += v; else minus += v; });
-    box.className = 'hist' + (state.histOpen ? ' open' : '');
-    var who = state.sel.length === 1 ? given(state.sel[0]) : state.sel.length + ' bạn';
-    box.innerHTML = '<button type="button" class="hist-h"><span>Đã ghi tuần ' + w + ' · ' + esc(who) + ' (' + items.length + ' mục)</span>' +
-      (plus ? '<em class="p num">+' + plus + '</em>' : '') + (minus ? '<em class="m num">' + sign(minus) + '</em>' : '') + '<i>▾</i></button><div class="hist-b"></div>';
-    box.querySelector('.hist-h').onclick = function () { state.histOpen = !state.histOpen; renderHist(); };
-    var b = box.querySelector('.hist-b');
-    if (!items.length) { b.innerHTML = '<div class="hist-e">Chưa có ghi nhận nào trong tuần này.</div>'; return; }
-    items.forEach(function (e) { b.appendChild(rowEl(e, true)); });
-    if (LOP) { var t = document.createElement('div'); t.className = 'hist-e'; t.textContent = 'Ghi sai: bấm Xóa (chạm 2 lần) rồi chọn lại nội dung đúng. Mọi lần xóa đều được lưu để GVCN kiểm tra.'; b.appendChild(t); }
+    var sum = document.createElement('div');
+    sum.className = 'hist-sum';
+    var third = state.sel.length === 1 ? '<div><b class="num">' + weekScore(state.sel[0], w) + '</b><small>điểm tuần ' + w + ' · ' + level(weekScore(state.sel[0], w))[0] + '</small></div>'
+      : '<div><b class="num">' + items.length + '</b><small>mục · ' + state.sel.length + ' bạn</small></div>';
+    sum.innerHTML = '<div class="p"><b class="num">+' + plus + '</b><small>tổng cộng</small></div><div class="m"><b class="num">' + sign(minus || 0) + '</b><small>tổng trừ</small></div>' + third;
+    box.appendChild(sum);
+    if (!items.length) { var e0 = document.createElement('div'); e0.className = 'hist-e'; e0.textContent = 'Tuần ' + w + ' chưa có ghi nhận nào.'; box.appendChild(e0); return; }
+    var lastD = null;
+    items.forEach(function (e) {
+      var d = dn(e.d);
+      if (d !== lastD) { var h = document.createElement('div'); h.className = 'dayhead num'; h.textContent = (d === TODAY ? 'Hôm nay' : wd(d)) + ' · ' + fmt(d); box.appendChild(h); lastD = d; }
+      box.appendChild(rowEl(e, true));
+    });
+    var t = document.createElement('div'); t.className = 'hist-e';
+    t.textContent = LOP ? 'Ghi sai: bấm Xóa (chạm 2 lần), rồi sang thẻ "Ghi điểm" để ghi lại cho đúng. Mọi lần xóa đều được lưu để GVCN kiểm tra.'
+      : 'Bạn xóa được mục do mình ghi. Mục do người khác ghi sai: báo Lớp trưởng hoặc GVCN.';
+    box.appendChild(t);
   }
+  function setTab(t) {
+    if (state.tab === t) return;
+    if (t === 'xem') flushDraft();
+    state.tab = t; renderSheet();
+    var el = t === 'xem' ? $('hist') : $('acts'); el.scrollTop = 0; restart(el, 'slide-' + (t === 'xem' ? 'l' : 'r'));
+  }
+  $('tGhi').onclick = function () { setTab('ghi'); };
+  $('tXem').onclick = function () { setTab('xem'); };
+
   function renderPick() {
     var box = $('pick'), first = !box.childElementCount, sl = box.scrollLeft;
     box.innerHTML = '';
@@ -857,7 +892,7 @@ function __main() {
     if (e.s && !e.ok) extra = '<span class="pending">Đề xuất trừ thêm ' + e.s + ' · chờ GVCN duyệt</span>';
     if (e.s && e.ok) extra = '<span class="pending">GVCN đã duyệt trừ thêm ' + e.s + '</span>';
     r.innerHTML = '<span class="ico ' + c + '">' + svg(iconFor(a)) + '</span>' +
-      '<span class="what"><b>' + esc(lab(a)) + '</b><small>' + (inHist ? (state.sel.length > 1 ? esc(given(e.n)) + ' · ' : '') + wd(dn(e.d)) + ' ' + fmt(dn(e.d)) : esc(e.n)) + (e.note ? ' · ' + esc(e.note) : '') + (e.by && e.by !== WHO ? ' · ' + esc(e.by.replace(' (app)', '')) : '') + '</small>' + extra + '</span>';
+      '<span class="what"><b>' + esc(lab(a)) + '</b><small>' + [inHist ? (state.sel.length > 1 ? given(e.n) : '') : e.n, e.note || '', e.by && e.by !== WHO ? e.by.replace(' (app)', '') : ''].filter(Boolean).map(esc).join(' · ') + '</small>' + extra + '</span>';
     var right = document.createElement('div');
     right.innerHTML = '<div class="val ' + c + ' num">' + sign(e.p || e.v) + '</div>';
     if (e.tmp) {
@@ -872,7 +907,7 @@ function __main() {
       d.onclick = function () {
         if (state.delArm !== e.row) { state.delArm = e.row; renderLog(); renderHist(); setTimeout(function () { if (state.delArm === e.row) { state.delArm = null; renderLog(); renderHist(); } }, 3000); return; }
         state.delArm = null;
-        xoa([e.row], 'Đã xóa: ' + lab(a) + ' · ' + given(e.n) + (inHist ? '. Chọn nội dung đúng để ghi lại.' : ''));
+        xoa([e.row], 'Đã xóa: ' + lab(a) + ' · ' + given(e.n) + (inHist ? '. Sang thẻ Ghi điểm để ghi lại.' : ''));
       };
       right.appendChild(d);
     }
