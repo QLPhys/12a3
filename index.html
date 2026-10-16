@@ -7,7 +7,9 @@
 <script>try { var t0 = localStorage.getItem("sotd-theme"); if (t0 === "light" || t0 === "dark") document.documentElement.setAttribute("data-theme", t0); } catch (e) {}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap">
+<link rel="preconnect" href="https://script.google.com">
+<link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" media="print" onload="this.media='all'">
 <style>
 :root {
   --bg: #f1f3f9; --card: #ffffff; --card-2: #f6f7fb; --ink: #0f1830; --ink-2: #3f4862; --muted: #6a7390; --line: #e2e6f0;
@@ -471,16 +473,37 @@ function __main() {
     store('sotd-last', name);
     showScreen('view');
     if (cache[name]) { cur.data = cache[name]; renderView(); return; }
-    cur.data = null;
-    $('viewBody').innerHTML = '<div class="skel" style="height:220px;margin-top:4px"></div><div class="skel" style="height:90px;margin-top:14px"></div><div class="skel" style="height:260px;margin-top:14px"></div>';
+    var old = hsLoad(name);
+    cur.data = old;
+    if (old) renderView();
+    else $('viewBody').innerHTML = '<div class="skel" style="height:220px;margin-top:4px"></div><div class="skel" style="height:90px;margin-top:14px"></div><div class="skel" style="height:260px;margin-top:14px"></div>';
+    fetchHs(name, function (d) {
+      if (cur.name !== name) return;
+      if (old && JSON.stringify(old) === JSON.stringify(d)) return;
+      cur.data = d; renderView();
+    }, function (err) {
+      if (old || cur.name !== name) return;
+      $('viewBody').innerHTML = '<div class="empty" style="margin-top:16px">Chưa tải được dữ liệu: ' + esc((err && err.message) || err) + '<br>Kiểm tra kết nối mạng rồi thử lại.</div>';
+    });
+  }
+  var hsWait = {};
+  function hsKey(n) { return 'sotd-hs-' + KEY + '-' + n; }
+  function hsLoad(n) { try { return JSON.parse(localStorage.getItem(hsKey(n)) || 'null'); } catch (e) { return null; } }
+  function fetchHs(name, ok, fail) {
+    if (hsWait[name]) { hsWait[name].push([ok, fail]); return; }
+    hsWait[name] = [[ok, fail]];
     google.script.run.withSuccessHandler(function (d) {
       cache[name] = d;
-      if (cur.name !== name) return;
-      cur.data = d; renderView();
+      try { localStorage.setItem(hsKey(name), JSON.stringify(d)); } catch (e) {}
+      var w = hsWait[name]; delete hsWait[name]; w.forEach(function (f) { if (f[0]) f[0](d); });
     }).withFailureHandler(function (err) {
-      $('viewBody').innerHTML = '<div class="empty" style="margin-top:16px">Chưa tải được dữ liệu: ' + esc((err && err.message) || err) + '<br>Kiểm tra kết nối mạng rồi thử lại.</div>';
+      var w = hsWait[name]; delete hsWait[name]; w.forEach(function (f) { if (f[1]) f[1](err); });
     }).layHocSinh(KEY, name);
   }
+  (function () {
+    var last = store('sotd-last');
+    if (last && STUDENTS.some(function (s) { return s.n === last; })) setTimeout(function () { if (!cache[last]) fetchHs(last); }, 50);
+  })();
   $('back').onclick = function () { cur.name = ''; showScreen('pick', 'back'); renderRecent(); };
 
   function weekInfo(d) {
@@ -808,8 +831,18 @@ function __main() {
 (function () {
   var xem = sotdParam('xem');
   if (!xem) { sotdError('Link tra cứu chưa đúng', 'Hãy mở đúng link tra cứu do GVCN lớp 12A3 gửi.'); return; }
+  var CK = 'sotd-lop-' + xem, c = null;
+  try { c = JSON.parse(localStorage.getItem(CK) || 'null'); } catch (e) {}
+  function luu(d) { try { localStorage.setItem(CK, JSON.stringify({ t: Date.now(), d: d })); } catch (e) {} }
+  if (c && c.d && Date.now() - c.t < 6 * 3600e3) {
+    window.__RAW = sotdB64(JSON.stringify(c.d)); window.__KEY = xem; window.__HS = sotdParam('hs');
+    __main();
+    sotdCall('duLieuLopXem', [xem]).then(luu, function () {});
+    return;
+  }
   sotdLoading('Đang tải sổ rèn luyện 12A3…');
   sotdCall('duLieuLopXem', [xem]).then(function (d) {
+    luu(d);
     window.__RAW = sotdB64(JSON.stringify(d)); window.__KEY = xem; window.__HS = sotdParam('hs');
     __main(); sotdDone();
   }, function (e) { sotdError('Chưa tải được dữ liệu', e.message); });
