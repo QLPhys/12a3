@@ -394,7 +394,7 @@ function __main() {
   var RAW = window.__RAW;
   var KEY = window.__KEY;
   var DATA = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(RAW), function (ch) { return ch.charCodeAt(0); })));
-  var CFG = DATA.cfg, STUDENTS = DATA.students, ACTS = DATA.crit.filter(function (a) { return !a.k; });
+  var CFG = DATA.cfg, STUDENTS = DATA.students, ACTS = DATA.crit.filter(function (a) { return !a.k && !a.x; });
   var GROUPS = DATA.groups || null, LOP = !!DATA.lop, GV = !!DATA.gv;
   var OFF = CFG.off || [], NWEEKS = CFG.weeks || 37;
   var byCode = {};
@@ -440,7 +440,7 @@ function __main() {
   var AUTO = 6;
   function svg(name) { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + (ICON[name] || ICON.check) + '</svg>'; }
   function iconFor(a) { return CODE_ICON[a.c] || (a.v > 0 ? 'plus' : 'alert'); }
-  function lab(a) { return SHORT[a.c] || a.t; }
+  function lab(a) { var b = byCode[a.c] || a; return b.s || SHORT[a.c] || b.t || a.t; }
   function dn(s) { var a = s.split('-'); return Math.round(Date.UTC(+a[0], +a[1] - 1, +a[2]) / 864e5); }
   function ds(n) { return new Date(n * 864e5).toISOString().slice(0, 10); }
   function fmt(n) { var a = ds(n).split('-'); return a[2] + '/' + a[1]; }
@@ -1035,7 +1035,7 @@ function __main() {
   function apply(d, quiet) {
     lastSync = Date.now();
     DATA = d; CFG = d.cfg; STUDENTS = d.students; GROUPS = d.groups || null; LOP = !!d.lop; GV = !!d.gv; WHO = d.who || WHO;
-    ACTS = d.crit.filter(function (a) { return !a.k; });
+    ACTS = d.crit.filter(function (a) { return !a.k && !a.x; });
     byCode = {}; d.crit.forEach(function (a) { byCode[a.c] = a; });
     OFF = CFG.off || []; START = dn(CFG.start);
     var t = dn(d.today);

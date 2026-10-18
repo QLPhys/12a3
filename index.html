@@ -345,7 +345,7 @@ function __main() {
     T01: 'clock', T02: 'book', T03: 'broom', T04: 'chat', T05: 'shirt', T06: 'task', T07: 'flag', T08: 'door', T09: 'phone',
     T10: 'alert', T11: 'zap', T12: 'stop', C09: 'trophy', T13: 'alert' };
   function svg(name, cls) { return '<svg' + (cls ? ' class="' + cls + '"' : '') + ' viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (ICON[name] || ICON.check) + '</svg>'; }
-  function lab(c) { return SHORT[c] || (byCode[c] ? byCode[c].t : c); }
+  function lab(c) { return (byCode[c] && byCode[c].s) || SHORT[c] || (byCode[c] ? byCode[c].t : c); }
   function dn(s) { var a = s.split('-'); return Math.round(Date.UTC(+a[0], +a[1] - 1, +a[2]) / 864e5); }
   function ds(n) { return new Date(n * 864e5).toISOString().slice(0, 10); }
   function fmt(n) { var a = ds(n).split('-'); return a[2] + '/' + a[1]; }
