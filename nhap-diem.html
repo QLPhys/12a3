@@ -145,6 +145,7 @@ body.sheet-open .wrap { padding-bottom: 60vh; }
 .val.p { color: var(--plus); } .val.m { color: var(--minus); } .val.M { color: var(--major); }
 .del { display: block; margin-top: 2px; border: 0; background: transparent; color: var(--muted); font-size: 12px; font-weight: 700; padding: 2px 0; text-align: right; width: 100%; }
 .del.arm { color: var(--major); }
+.del.apr { color: var(--brand); }
 .empty { text-align: center; color: var(--muted); background: var(--card); border-radius: 16px; padding: 22px 14px; font-size: 14px; border: 2px dashed var(--line); }
 .foot { color: var(--muted); font-size: 12px; margin-top: 18px; text-align: center; }
 .sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 10; max-width: 560px; margin: 0 auto; background: var(--card); box-shadow: 0 -8px 40px rgba(10, 16, 40, .28);
@@ -184,8 +185,17 @@ body.sheet-open .wrap { padding-bottom: 60vh; }
 .act.p .v { color: var(--plus); } .act.m .v { color: var(--minus); } .act.M .v { color: var(--major); }
 .act.armed { box-shadow: 0 0 0 3px var(--major); background: var(--major-soft); }
 .act.armed .t::after { content: "Chạm lần nữa để ghi"; display: block; color: var(--major); font-size: 11px; font-weight: 800; margin-top: 2px; }
-.sheet.min .acts, .sheet.min .notebar, .sheet.min .draft, .sheet.min .pick { display: none; }
-.pick { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; flex-shrink: 0; margin: 0 -14px; padding: 2px 14px 4px; }
+.sheet.min .acts, .sheet.min .notebar, .sheet.min .draft, .sheet.min .pickw { display: none; }
+.pickw { position: relative; flex-shrink: 0; margin: 0 -14px; }
+.pick { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 2px 14px 4px; scroll-behavior: smooth; }
+.pkn { position: absolute; top: 0; bottom: 4px; width: 46px; border: 0; z-index: 2; display: grid; place-items: center; color: var(--ink); font-size: 26px; font-weight: 900; line-height: 1; padding: 0; }
+.pkn span { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: var(--card); box-shadow: var(--shadow-s); border: 1px solid var(--line); }
+.pkn.l { left: 0; background: linear-gradient(90deg, var(--card) 45%, transparent); justify-items: start; padding-left: 6px; }
+.pkn.r { right: 0; background: linear-gradient(270deg, var(--card) 45%, transparent); justify-items: end; padding-right: 6px; }
+.pkn[hidden] { display: none; }
+.drag-x { cursor: grab; user-select: none; -webkit-user-select: none; }
+.drag-x.dragging { cursor: grabbing; scroll-behavior: auto; }
+.drag-x.dragging * { pointer-events: none; }
 .pick::-webkit-scrollbar { display: none; }
 .pk { flex-shrink: 0; border: 1px solid var(--line); background: var(--bg); border-radius: 999px; padding: 4px 11px 4px 4px; display: flex; align-items: center; gap: 6px; font-weight: 800; font-size: 13.5px; min-height: 40px; }
 .pk i { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-style: normal; font-size: 13px; font-weight: 900; }
@@ -346,7 +356,7 @@ html, body { transition: background-color .3s ease, color .3s ease; }
     <div class="who-t"><b id="who"></b><small id="whoSub"></small></div>
     <button type="button" id="close">Đóng</button>
   </div>
-  <div class="pick" id="pick" role="group" aria-label="Chọn bạn"></div>
+  <div class="pickw"><button type="button" class="pkn l" id="pkL" aria-label="Xem các bạn phía trước" hidden><span>‹</span></button><div class="pick" id="pick" role="group" aria-label="Chọn bạn"></div><button type="button" class="pkn r" id="pkR" aria-label="Xem các bạn phía sau" hidden><span>›</span></button></div>
   <div class="tabs2" role="tablist" aria-label="Chế độ">
     <button type="button" role="tab" id="tGhi" aria-selected="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Ghi điểm</button>
     <button type="button" role="tab" id="tXem" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg>Đã ghi <b id="tCnt" class="num">0</b></button>
@@ -385,7 +395,7 @@ function __main() {
   var KEY = window.__KEY;
   var DATA = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(RAW), function (ch) { return ch.charCodeAt(0); })));
   var CFG = DATA.cfg, STUDENTS = DATA.students, ACTS = DATA.crit.filter(function (a) { return !a.k; });
-  var GROUPS = DATA.groups || null, LOP = !!DATA.lop;
+  var GROUPS = DATA.groups || null, LOP = !!DATA.lop, GV = !!DATA.gv;
   var OFF = CFG.off || [], NWEEKS = CFG.weeks || 37;
   var byCode = {};
   DATA.crit.forEach(function (a) { byCode[a.c] = a; });
@@ -459,6 +469,7 @@ function __main() {
   if (state.grp !== 'all' && !(GROUPS && STUDENTS.some(function (n) { return GROUPS[n] === state.grp; }))) state.grp = 'all';
   function callP(name, args) {
     return new Promise(function (ok, fail) {
+      if (typeof sotdCall === 'function') { sotdCall(name, args).then(ok, fail); return; }
       var r = google.script.run.withSuccessHandler(ok).withFailureHandler(function (e) { fail(e instanceof Error ? e : new Error(String((e && e.message) || e))); });
       r[name].apply(r, args);
     });
@@ -550,7 +561,7 @@ function __main() {
     if (d.code === 'KHAC') return { c: d.pts > 0 ? 'C09' : 'T13', v: d.pts, t: d.pts > 0 ? 'Điểm GV cho thêm' : 'Vi phạm khác', k: 1 };
     return byCode[d.code];
   }
-  function noteNeeded() { return state.adjust || (state.draft && state.draft.code === 'KHAC'); }
+  function noteNeeded() { return (state.adjust && !GV) || (state.draft && state.draft.code === 'KHAC'); }
   function stopAuto() { clearTimeout(autoT); autoT = null; var b = $('dBar'); b.classList.remove('run'); }
   function startAuto() {
     stopAuto();
@@ -789,7 +800,7 @@ function __main() {
       box.appendChild(rowEl(e, true));
     });
     var t = document.createElement('div'); t.className = 'hist-e';
-    t.textContent = LOP ? 'Ghi sai: bấm Xóa (chạm 2 lần), rồi sang thẻ "Ghi điểm" để ghi lại cho đúng. Mọi lần xóa đều được lưu để GVCN kiểm tra.'
+    t.textContent = GV ? 'GVCN: xóa được mọi mục, bấm "Duyệt" để tính phần trừ thêm. Mọi lần xóa đều được lưu ở tab Lịch sử xóa.' : LOP ? 'Ghi sai: bấm Xóa (chạm 2 lần), rồi sang thẻ "Ghi điểm" để ghi lại cho đúng. Mọi lần xóa đều được lưu để GVCN kiểm tra.'
       : 'Bạn xóa được mục do mình ghi. Mục do người khác ghi sai: báo Lớp trưởng hoặc GVCN.';
     box.appendChild(t);
   }
@@ -816,7 +827,8 @@ function __main() {
       box.appendChild(b);
       if (on && first) setTimeout(function () { box.scrollLeft = Math.max(0, b.offsetLeft - 40); }, 0);
     });
-    if (!first) box.scrollLeft = sl;
+    if (!first) { box.style.scrollBehavior = 'auto'; box.scrollLeft = sl; box.style.scrollBehavior = ''; }
+    setTimeout(pickNav, 0);
   }
   function renderDraft() {
     var box = $('draft'), a = draftAct();
@@ -879,6 +891,7 @@ function __main() {
     renderDraft();
   }
   function canDel(e) {
+    if (GV) return !e.tmp && !locked();
     if (e.tmp || e.ok || locked()) return false;
     if (e.by === WHO) return true;
     return LOP && /^(Tổ trưởng|Lớp trưởng|Lớp phó)/.test(e.by || '');
@@ -900,7 +913,15 @@ function __main() {
       wt.className = 'wait' + (tries ? ' err' : '');
       wt.textContent = tries ? 'Chờ mạng' : 'Đang lưu…';
       right.appendChild(wt);
-    } else if (canDel(e)) {
+    }
+    if (!e.tmp && GV && e.s > 0) {
+      var ap = document.createElement('button');
+      ap.type = 'button'; ap.className = 'del apr';
+      ap.textContent = e.ok ? 'Bỏ duyệt' : 'Duyệt −' + e.s;
+      ap.onclick = function () { duyet(e); };
+      right.appendChild(ap);
+    }
+    if (!e.tmp && canDel(e)) {
       var d = document.createElement('button');
       d.type = 'button'; d.className = 'del' + (state.delArm === e.row ? ' arm' : '');
       d.textContent = state.delArm === e.row ? 'Chạm để xóa' : 'Xóa';
@@ -959,6 +980,15 @@ function __main() {
     else renderSheet();
     if (state.xtra && !$('note').value.trim()) toast('Ghi lý do vào ô Ghi chú (bắt buộc với điểm khác), rồi bấm Lưu.', false);
   }
+  function duyet(e) {
+    var val = !e.ok, old = [e.ok, e.p];
+    e.ok = val; e.p = e.v - (val ? Math.abs(e.s) : 0);
+    toast(val ? 'Đã duyệt trừ thêm ' + e.s + ' · ' + given(e.n) : 'Đã bỏ duyệt trừ thêm · ' + given(e.n), false);
+    render();
+    callP('duyetTruThem', [KEY, e.row, val]).then(function () { saveCache(); }, function (err) {
+      e.ok = old[0]; e.p = old[1]; toast('Chưa duyệt được: ' + err.message, false); render();
+    });
+  }
   function xoa(rows, msg) {
     var gone = {}, kept = [];
     rows.forEach(function (r) { gone[r] = 1; });
@@ -1004,7 +1034,7 @@ function __main() {
   var lastSync = Date.now();
   function apply(d, quiet) {
     lastSync = Date.now();
-    DATA = d; CFG = d.cfg; STUDENTS = d.students; GROUPS = d.groups || null; LOP = !!d.lop; WHO = d.who || WHO;
+    DATA = d; CFG = d.cfg; STUDENTS = d.students; GROUPS = d.groups || null; LOP = !!d.lop; GV = !!d.gv; WHO = d.who || WHO;
     ACTS = d.crit.filter(function (a) { return !a.k; });
     byCode = {}; d.crit.forEach(function (a) { byCode[a.c] = a; });
     OFF = CFG.off || []; START = dn(CFG.start);
@@ -1106,6 +1136,46 @@ function __main() {
   gz.addEventListener('touchend', endDrag);
   gz.addEventListener('touchcancel', endDrag);
   gz.onclick = function () { if (gd > 5) return; state.min = !state.min; renderSheet(); if (state.min) stopAuto(); else startAuto(); };
+  /* ---- Trượt hàng tên (và hàng tuần, ngày, tổ): kéo bằng chuột, lăn chuột, nút ‹ › ---- */
+  function pickNav() {
+    var b = $('pick'), max = b.scrollWidth - b.clientWidth;
+    $('pkL').hidden = b.scrollLeft < 8;
+    $('pkR').hidden = max <= 8 || b.scrollLeft > max - 8;
+  }
+  function dragX(el) {
+    el.classList.add('drag-x');
+    var x0 = 0, s0 = 0, down = false, moved = false;
+    el.addEventListener('pointerdown', function (e) {
+      if (e.pointerType !== 'mouse' || e.button !== 0) return;
+      down = true; moved = false; x0 = e.clientX; s0 = el.scrollLeft;
+    });
+    window.addEventListener('pointermove', function (e) {
+      if (!down) return;
+      var dx = e.clientX - x0;
+      if (!moved && Math.abs(dx) > 6) { moved = true; el.classList.add('dragging'); }
+      if (moved) el.scrollLeft = s0 - dx;
+    });
+    window.addEventListener('pointerup', function () {
+      if (!down) return;
+      down = false;
+      if (moved) {
+        el.classList.remove('dragging');
+        var stop = function (ev) { ev.stopPropagation(); ev.preventDefault(); };
+        el.addEventListener('click', stop, true);
+        setTimeout(function () { el.removeEventListener('click', stop, true); }, 0);
+      }
+    });
+    el.addEventListener('wheel', function (e) {
+      if (el.scrollWidth <= el.clientWidth || Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+      e.preventDefault();
+      el.style.scrollBehavior = 'auto'; el.scrollLeft += e.deltaY; el.style.scrollBehavior = '';
+    }, { passive: false });
+  }
+  ['pick', 'weeks', 'days', 'grpF'].forEach(function (id) { dragX($(id)); });
+  $('pick').addEventListener('scroll', pickNav, { passive: true });
+  window.addEventListener('resize', pickNav);
+  $('pkL').onclick = function () { var b = $('pick'); b.scrollLeft -= b.clientWidth * 0.8; };
+  $('pkR').onclick = function () { var b = $('pick'); b.scrollLeft += b.clientWidth * 0.8; };
   if (!window.__STALE) saveCache();
   render(true);
   stagger('grid'); stagger('log');
